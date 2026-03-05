@@ -120,7 +120,7 @@ export const drawDragArea = (viewer) => {
           const treeSpace = viewer.options.dimensions.tree.width;
           const new_width = treeSpace + dx;
           if (Number.isNaN(new_width)) return;
-          viewer.gp_taxonomy.dipatcher.call(
+          viewer.gp_taxonomy.dispatcher.call(
             "changeWidth",
             viewer.gp_taxonomy,
             new_width

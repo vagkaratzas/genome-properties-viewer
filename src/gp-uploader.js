@@ -283,7 +283,7 @@ export class FileGetter {
 
     const r = w / 2 - 10;
 
-    const circunferencia = 2 * Math.PI * r;
+    const circumference = 2 * Math.PI * r;
     gauge
       .append("circle")
       .attr("class", "gauge-bg")
@@ -294,8 +294,8 @@ export class FileGetter {
       .append("circle")
       .attr("class", "gauge-val")
       .attr("stroke-linecap", "round")
-      .attr("stroke-dasharray", circunferencia)
-      .attr("stroke-dashoffset", circunferencia)
+      .attr("stroke-dasharray", circumference)
+      .attr("stroke-dashoffset", circumference)
       .attr("r", r)
       .attr("transform", `rotate(90,${w / 2},${w / 2})`)
       .attr("cx", w / 2)
@@ -318,8 +318,8 @@ export class FileGetter {
       .classed("uncertain", (d) => d.progress === null)
       .attr("stroke-dashoffset", (d) =>
         d.progress === null
-          ? circunferencia / 2
-          : circunferencia * (1 - d.progress)
+          ? circumference / 2
+          : circumference * (1 - d.progress)
       );
   }
 }

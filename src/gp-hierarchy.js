@@ -27,7 +27,7 @@ class GenomePropertiesHierarchy {
      * Event dispatcher using `d3.dispatch`
      * @type {Object}
      * */
-    this.dipatcher = d3.dispatch("siwtchChanged", "hierarchyLoaded");
+    this.dispatcher = d3.dispatch("switchChanged", "hierarchyLoaded");
     return this;
   }
 
@@ -41,7 +41,7 @@ class GenomePropertiesHierarchy {
       .then((response) => {
         if (!response.ok)
           throw new Error(`${response.status} ${response.statusText}`);
-        return response.json;
+        return response.json();
       })
       .then((data) => {
         this.load_hierarchy_from_data(data);
@@ -66,7 +66,7 @@ class GenomePropertiesHierarchy {
       id: d.id,
       enable: true,
     }));
-    this.dipatcher.call("hierarchyLoaded", this, this.root);
+    this.dispatcher.call("hierarchyLoaded", this, this.root);
   }
 
   /**
@@ -126,16 +126,16 @@ class GenomePropertiesHierarchy {
     this.hierarchy_switch.forEach((e) => {
       if (e.id === id.id) e.enable = !e.enable;
     });
-    this.dipatcher.call("siwtchChanged", this, this.hierarchy_switch);
+    this.dispatcher.call("switchChanged", this, this.hierarchy_switch);
   }
 
   /**
    * shortcut to add invoke a callback when one of the dispatched events gets trigger
-   * @param {String} typename - one of the dispatched events: "siwtchChanged", "hierarchyLoaded"
+   * @param {String} typename - one of the dispatched events: "switchChanged", "hierarchyLoaded"
    * @return {GenomePropertiesHierarchy} The curent instance for chaining methods.
    */
   on(typename, callback) {
-    this.dipatcher.on(typename, callback);
+    this.dispatcher.on(typename, callback);
     return this;
   }
 }

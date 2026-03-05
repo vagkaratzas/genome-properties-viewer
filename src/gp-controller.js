@@ -12,21 +12,21 @@ export default class GenomePropertiesController {
     gp_label_selector = null,
     tax_label_selector = null,
     tax_search_selector = null,
-    hierarchy_contorller = null,
+    hierarchy_controller = null,
     width = 400,
   }) {
     this.gp_viewer = gp_viewer;
-    this.hierarchy_contorller = hierarchy_contorller;
+    this.hierarchy_controller = hierarchy_controller;
     this.gp_taxonomy = gp_taxonomy;
     this.width = width;
-    this.dipatcher = d3.dispatch("textFilterChanged", "legendFilterChanged");
+    this.dispatcher = d3.dispatch("textFilterChanged", "legendFilterChanged");
 
     if (gp_element_selector) {
       this.gp_component = d3.select(gp_element_selector);
 
-      if (this.hierarchy_contorller.root) this.draw_hierarchy_selector();
+      if (this.hierarchy_controller.root) this.draw_hierarchy_selector();
       else
-        this.hierarchy_contorller.on("hierarchyLoaded", () =>
+        this.hierarchy_controller.on("hierarchyLoaded", () =>
           this.draw_hierarchy_selector()
         );
     }
@@ -153,7 +153,7 @@ export default class GenomePropertiesController {
         );
         legends_filter[d.key] = filter_symbols[n];
         this.moveScrollUp();
-        this.dipatcher.call("legendFilterChanged", this, legends_filter);
+        this.dispatcher.call("legendFilterChanged", this, legends_filter);
       })
       .on("mouseover", (event, d) =>
         this.draw_tooltip(
@@ -192,7 +192,7 @@ export default class GenomePropertiesController {
     const tll = this.gp_component
       .select(".options ul")
       .selectAll(".top-level-option")
-      .data(this.hierarchy_contorller.hierarchy_switch, (d) => d.id);
+      .data(this.hierarchy_controller.hierarchy_switch, (d) => d.id);
 
     const li = tll.enter().append("li").attr("class", "top-level-option");
     li.append("div")
@@ -200,16 +200,16 @@ export default class GenomePropertiesController {
       .style("height", "0.8em")
       .style("margin-right", "5px")
       .style("display", "inline-block")
-      .style("background", (d) => this.hierarchy_contorller.color(d.id))
+      .style("background", (d) => this.hierarchy_controller.color(d.id))
       .style(
         "border",
-        (d) => `2px solid ${this.hierarchy_contorller.color(d.id)}`
+        (d) => `2px solid ${this.hierarchy_controller.color(d.id)}`
       )
       .style("border-radius", "50%")
       .on("click", (event, d) => this.update(d));
 
     li.append("a")
-      .text((d) => this.hierarchy_contorller.nodes[d.id].name)
+      .text((d) => this.hierarchy_controller.nodes[d.id].name)
       .on("click", (event, d) => this.update(d));
   }
 
@@ -217,25 +217,25 @@ export default class GenomePropertiesController {
     let selected = [];
     this.moveScrollUp();
     if (d === "ALL" || d === "NONE") {
-      this.hierarchy_contorller.hierarchy_switch.forEach(
+      this.hierarchy_controller.hierarchy_switch.forEach(
         (e) => (e.enable = d === "ALL")
       );
-      this.hierarchy_contorller.dipatcher.call(
-        "siwtchChanged",
+      this.hierarchy_controller.dispatcher.call(
+        "switchChanged",
         this,
         this.hierarchy_switch
       );
       this.gp_component.select(".current_status").html(d.toLowerCase());
     } else {
-      this.hierarchy_contorller.toggle_switch(d);
+      this.hierarchy_controller.toggle_switch(d);
       this.gp_component.select(".current_status").text("");
-      selected = this.hierarchy_contorller.hierarchy_switch.filter(
+      selected = this.hierarchy_controller.hierarchy_switch.filter(
         (e) => e.enable
       );
       if (selected.length === 0)
         this.gp_component.select(".current_status").text("none");
       else if (
-        selected.length === this.hierarchy_contorller.hierarchy_switch.length
+        selected.length === this.hierarchy_controller.hierarchy_switch.length
       )
         this.gp_component.select(".current_status").text("all");
       else {
@@ -252,7 +252,7 @@ export default class GenomePropertiesController {
           .style("margin-left", "2px")
           .style("display", "inline-block")
           .style("background", (item) =>
-            this.hierarchy_contorller.color(item.id)
+            this.hierarchy_controller.color(item.id)
           )
           .style("border-radius", "50%");
         samples.exit().remove();
@@ -262,12 +262,12 @@ export default class GenomePropertiesController {
       .select(".options ul")
       .selectAll(".top-level-option div")
       .style("background", (item) =>
-        item.enable ? this.hierarchy_contorller.color(item.id) : "#e3e3e3"
+        item.enable ? this.hierarchy_controller.color(item.id) : "#e3e3e3"
       );
   }
 
   on(typename, callback) {
-    this.dipatcher.on(typename, callback);
+    this.dispatcher.on(typename, callback);
     return this;
   }
 }

@@ -18,7 +18,7 @@ export default class TaxonomyNodeManager {
         const e = this.main.current_order.splice(current_o, 1);
         this.main.current_order.splice(current_o + d_col, 0, e[0]);
         this.main.update_tree(1000);
-        this.main.dipatcher.call(
+        this.main.dispatcher.call(
           "changeOrder",
           this.main,
           this.main.current_order
@@ -88,7 +88,7 @@ export default class TaxonomyNodeManager {
           (!d.data.children || d.data.children.length === 0)
         ) {
           // Only leaves have taxId attached
-          this.main.dipatcher.call("spaciesRequested", this.main, d.data.taxid);
+          this.main.dispatcher.call("speciesRequested", this.main, d.data.taxid);
         }
         if (d.parent) {
           setTimeout(() => {
@@ -100,10 +100,10 @@ export default class TaxonomyNodeManager {
       .on("dblclick", (event, d) => {
         if (!d.data.children || d.data.children.length === 0) {
           // Only leaves have taxId attached
-          this.main.dipatcher.call("spaciesRequested", this.main, d.data.taxid);
+          this.main.dispatcher.call("speciesRequested", this.main, d.data.taxid);
         }
         if (d.parent) {
-          this.main.dipatcher.call(
+          this.main.dispatcher.call(
             "multipleSpaciesRequested",
             this.main,
             this.main.getLeaves(d.data)
@@ -199,7 +199,7 @@ export default class TaxonomyNodeManager {
       .attr("fill", "white")
       .on("click", (event, d) => {
         if (d.data.loaded)
-          this.main.dipatcher.call(
+          this.main.dispatcher.call(
             "removeSpacies",
             this.main,
             event,

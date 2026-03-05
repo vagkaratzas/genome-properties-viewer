@@ -23,9 +23,9 @@ export default class GenomePropertiesTaxonomy {
     this.svg = null;
     this.collapse_tree = true;
     this.show_tree = show_tree;
-    this.dipatcher = d3.dispatch(
+    this.dispatcher = d3.dispatch(
       "changeOrder",
-      "spaciesRequested",
+      "speciesRequested",
       "multipleSpaciesRequested",
       "changeWidth",
       "taxonomyLoaded",
@@ -55,7 +55,7 @@ export default class GenomePropertiesTaxonomy {
     this.root.parent = null;
     this.nodes = this.load_nodes(this.root);
     this.root.expanded = true;
-    this.dipatcher.call("taxonomyLoaded", this, this.root);
+    this.dispatcher.call("taxonomyLoaded", this, this.root);
     this.update_tree(500);
   }
 
@@ -161,7 +161,7 @@ export default class GenomePropertiesTaxonomy {
   requestAll(tree) {
     tree.expanded = true;
     if (!tree.children || tree.children.length === 0) {
-      this.dipatcher.call("spaciesRequested", this, tree.taxid);
+      this.dispatcher.call("speciesRequested", this, tree.taxid);
     }
     if (tree.children) {
       tree.children.forEach((d) => this.requestAll(d));
@@ -356,7 +356,7 @@ export default class GenomePropertiesTaxonomy {
   }
 
   on(typename, callback) {
-    this.dipatcher.on(typename, callback);
+    this.dispatcher.on(typename, callback);
     return this;
   }
 
@@ -376,6 +376,6 @@ export default class GenomePropertiesTaxonomy {
 
   sortBy(method) {
     this.current_order = this.orders[method];
-    this.dipatcher.call("changeOrder", this, this.current_order);
+    this.dispatcher.call("changeOrder", this, this.current_order);
   }
 }

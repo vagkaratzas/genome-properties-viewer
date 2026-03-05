@@ -200,7 +200,7 @@ export default class GenomePropertiesViewer {
         this.current_order = order;
         this.order_organisms_current_order();
       })
-      .on("spaciesRequested", (taxId) => {
+      .on("speciesRequested", (taxId) => {
         // loadGenomePropertiesFile(this, taxId);
         enableSpeciesFromPreLoaded(this, taxId);
       })
@@ -225,7 +225,7 @@ export default class GenomePropertiesViewer {
 
     this.gp_hierarchy = new GenomePropertiesHierarchy()
       // .load_hierarchy_from_path(this.options.hierarchy_path)
-      .on("siwtchChanged", () => {
+      .on("switchChanged", () => {
         this.mainGroup.y = 0;
         d3.select(".gpv-rows-group").attr(
           "transform",
@@ -281,7 +281,7 @@ export default class GenomePropertiesViewer {
       tax_search_selector,
       gp_viewer: this,
       gp_taxonomy: this.gp_taxonomy,
-      hierarchy_contorller: this.gp_hierarchy,
+      hierarchy_controller: this.gp_hierarchy,
     }).on("legendFilterChanged", (filters) => {
       this.legend_filters = filters;
       this.update_viewer();
