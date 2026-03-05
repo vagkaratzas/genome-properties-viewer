@@ -80,7 +80,10 @@ export default class GenomePropertiesViewer {
     this.erz_change_callback = null;
 
     this.modal = new GPModal(element_selector);
-    this.fileGetter = new FileGetter({ element: ".gp-modal-content", viewer: this });
+    this.fileGetter = new FileGetter({
+      element: ".gp-modal-content",
+      viewer: this,
+    });
 
     if (width === null) {
       const rect = d3.select(element_selector).node().getBoundingClientRect();
@@ -96,11 +99,25 @@ export default class GenomePropertiesViewer {
     }
 
     this.options = {
-      width, height, element_selector, cell_side, server, gp_server,
-      server_tax, total_panel_height, hierarchy_path, model_species_path,
-      template_link_to_GP_page, dimensions, erz_path, erz_merged_path,
-      controller_element_selector, legends_element_selector,
-      gp_text_filter_selector, gp_label_selector, tax_label_selector,
+      width,
+      height,
+      element_selector,
+      cell_side,
+      server,
+      gp_server,
+      server_tax,
+      total_panel_height,
+      hierarchy_path,
+      model_species_path,
+      template_link_to_GP_page,
+      dimensions,
+      erz_path,
+      erz_merged_path,
+      controller_element_selector,
+      legends_element_selector,
+      gp_text_filter_selector,
+      gp_label_selector,
+      tax_label_selector,
       tax_search_selector,
     };
 
@@ -191,9 +208,7 @@ export default class GenomePropertiesViewer {
       x: 30,
       y: dimensions.total.short_side,
       height:
-        height -
-        dimensions.total.short_side -
-        dimensions.scroller.short_side,
+        height - dimensions.total.short_side - dimensions.scroller.short_side,
       width: dimensions.tree.width,
     })
       .on("changeOrder", (order) => {
@@ -534,7 +549,8 @@ export default class GenomePropertiesViewer {
       .transition()
       .attr(
         "transform",
-        (d, i) => `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`
+        (d, i) =>
+          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`
       );
 
     const newRow = new_row_p
