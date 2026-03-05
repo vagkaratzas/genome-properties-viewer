@@ -79,7 +79,8 @@ const updateStepDetailsButton = (viewer, gp, element, cellSide) => {
     .attr("cy", top + half)
     .attr("r", half);
 
-  const symbol1 = d3.symbol()
+  const symbol1 = d3
+    .symbol()
     .type(d3.symbolCross)
     .size((cellSide / 2) ** 2);
   buttonG
