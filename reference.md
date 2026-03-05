@@ -74,7 +74,7 @@ This Class manages the file that defines that hierarchy and uses is to allow fil
     * [.nodes](#GenomePropertiesHierarchy+nodes) : <code>Object</code>
     * [.root](#GenomePropertiesHierarchy+root) : <code>Object</code>
     * [.hierarchy_switch](#GenomePropertiesHierarchy+hierarchy_switch) : <code>Array</code>
-    * [.dipatcher](#GenomePropertiesHierarchy+dipatcher) : <code>Object</code>
+    * [.dispatcher](#GenomePropertiesHierarchy+dispatcher) : <code>Object</code>
     * [.load_hierarchy_from_path(path)](#GenomePropertiesHierarchy+load_hierarchy_from_path) ⇒ [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)
     * [.load_hierarchy_from_data(data)](#GenomePropertiesHierarchy+load_hierarchy_from_data)
     * [.add_node_recursively(node)](#GenomePropertiesHierarchy+add_node_recursively)
@@ -106,9 +106,9 @@ Reference to the root of the GP hierarchy
 List of top level GP indicating if its enabled or not for filtering purposes
 
 **Kind**: instance property of [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)  
-<a name="GenomePropertiesHierarchy+dipatcher"></a>
+<a name="GenomePropertiesHierarchy+dispatcher"></a>
 
-### genomePropertiesHierarchy.dipatcher : <code>Object</code>
+### genomePropertiesHierarchy.dispatcher : <code>Object</code>
 Event dispatcher using `d3.dispatch`
 
 **Kind**: instance property of [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)  
@@ -191,7 +191,7 @@ shortcut to add invoke a callback when one of the dispatched events gets trigger
 
 | Param | Type | Description |
 | --- | --- | --- |
-| typename | <code>String</code> | one of the dispatched events: "siwtchChanged", "hierarchyLoaded" |
+| typename | <code>String</code> | one of the dispatched events: "switchChanged", "hierarchyLoaded" |
 
 <a name="GPModal"></a>
 

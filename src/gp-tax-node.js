@@ -88,7 +88,11 @@ export default class TaxonomyNodeManager {
           (!d.data.children || d.data.children.length === 0)
         ) {
           // Only leaves have taxId attached
-          this.main.dispatcher.call("speciesRequested", this.main, d.data.taxid);
+          this.main.dispatcher.call(
+            "speciesRequested",
+            this.main,
+            d.data.taxid
+          );
         }
         if (d.parent) {
           setTimeout(() => {
@@ -100,7 +104,11 @@ export default class TaxonomyNodeManager {
       .on("dblclick", (event, d) => {
         if (!d.data.children || d.data.children.length === 0) {
           // Only leaves have taxId attached
-          this.main.dispatcher.call("speciesRequested", this.main, d.data.taxid);
+          this.main.dispatcher.call(
+            "speciesRequested",
+            this.main,
+            d.data.taxid
+          );
         }
         if (d.parent) {
           this.main.dispatcher.call(
