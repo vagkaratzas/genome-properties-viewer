@@ -135,7 +135,7 @@ export default class GenomePropertiesViewer {
         .then((response) => {
           if (!response.ok)
             throw new Error(`${response.status} ${response.statusText}`);
-          return response.json;
+          return response.json();
         })
         .then((data) => {
           this.whitelist = data;

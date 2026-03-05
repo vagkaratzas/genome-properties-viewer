@@ -42,7 +42,7 @@ export default class GenomePropertiesTaxonomy {
       .then((response) => {
         if (!response.ok)
           throw new Error(`${response.status} ${response.statusText}`);
-        return response.json;
+        return response.json();
       })
       .then((data) => {
         this.load_taxonomy_obj(data);

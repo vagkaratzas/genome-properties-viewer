@@ -101,7 +101,7 @@ export const loadGenomePropertiesText = (
         viewer.propsOrder = Object.keys(viewer.data).sort();
       viewer.update_viewer(500);
     } else {
-      delete viewer.organisms[tax_id];
+      viewer.organisms.splice(viewer.organisms.indexOf(tax_id), 1);
       delete viewer.organism_totals[tax_id];
       throw new Error(
         `File didn't load. The following lines have errors:${errorLines
@@ -154,8 +154,8 @@ export class FileGetter {
     this.activeGauges = [];
     setInterval(
       (_this) => {
-        _this.activeGauge =
-          (_this.activeGauge + 1) % Object.values(_this.activeGauges).length;
+        if (_this.activeGauges.length > 0)
+          _this.activeGauge = (_this.activeGauge + 1) % _this.activeGauges.length;
       },
       3000,
       this

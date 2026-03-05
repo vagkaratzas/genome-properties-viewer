@@ -262,7 +262,7 @@ export default class GenomePropertiesController {
       .select(".options ul")
       .selectAll(".top-level-option div")
       .style("background", (item) =>
-        d.enable ? this.hierarchy_contorller.color(item.id) : "#e3e3e3"
+        item.enable ? this.hierarchy_contorller.color(item.id) : "#e3e3e3"
       );
   }
 
