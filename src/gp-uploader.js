@@ -204,11 +204,7 @@ export class FileGetter {
       }
       responseAsArrayBuffer = concat(values);
     }
-    const codeUnits = new Uint8Array(responseAsArrayBuffer);
-    let text = "";
-    for (let i = 0; i < codeUnits.length; i++) {
-      text += String.fromCharCode(codeUnits[i]);
-    }
+    const text = new TextDecoder().decode(responseAsArrayBuffer);
     this.files[path].loading = false;
     this.files[path].data = shouldParseAsJSON ? JSON.parse(text) : text;
 

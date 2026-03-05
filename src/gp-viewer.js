@@ -410,13 +410,15 @@ export default class GenomePropertiesViewer {
     }
   }
 
-  update_viewer(time = 0) {
-    this.props = this.organisms.length ? Object.values(this.data) : [];
-    refreshGPTotals(this);
-    filterByHierarchy(this);
-    filterByText(this);
-    filterByLegend(this);
-    this.sort_props();
+  update_viewer(time = 0, skip_filter = false) {
+    if (!skip_filter || !this.props) {
+      this.props = this.organisms.length ? Object.values(this.data) : [];
+      refreshGPTotals(this);
+      filterByHierarchy(this);
+      filterByText(this);
+      filterByLegend(this);
+      this.sort_props();
+    }
     this._adjustXScaleBasedOnSteps();
 
     this.column_total_width = this.options.cell_side;

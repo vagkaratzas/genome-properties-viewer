@@ -15,7 +15,7 @@ export const transformByScroll = (viewer) => {
   );
   viewer.options.dimensions.total.short_side = viewer.options.cell_side;
   viewer.gp_taxonomy.y = viewer.options.dimensions.total.short_side;
-  viewer.update_viewer();
+  viewer.update_viewer(0, true);
 };
 
 /**
