@@ -1,4 +1,3 @@
-import { symbol, symbolCross } from "d3-shape";
 import * as d3 from "./d3";
 
 const displayStepsModal = (viewer, gp) => {
@@ -80,8 +79,8 @@ const updateStepDetailsButton = (viewer, gp, element, cellSide) => {
     .attr("cy", top + half)
     .attr("r", half);
 
-  const symbol1 = symbol()
-    .type(symbolCross)
+  const symbol1 = d3.symbol()
+    .type(d3.symbolCross)
     .size((cellSide / 2) ** 2);
   buttonG
     .merge(button)

@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Removed
+
+- `gp-uploader.js`: `FileGetter` was importing `select` from d3 to set `this.base`, which was never read after construction. Removed `this.base`, the `select` import, and the now-unused `element` constructor parameter.
+- `gp-viewer.js`: `this.gp_values` array was assigned but never referenced anywhere. Removed.
+- `gp-steps.js`: Redundant direct `import { symbol, symbolCross } from "d3-shape"` removed; these are already re-exported through `src/d3.js` and the file already imports `* as d3`. Replaced the two bare calls with `d3.symbol()` / `d3.symbolCross`.
+- `src/d3.js`: Removed five unused re-exports — `stack` (d3-shape), `stratify` and `cluster` (d3-hierarchy), `zoom` (d3-zoom), `interpolate` (d3-interpolate). None were referenced in any source file.
+- `package.json`: Removed explicit `d3-zoom` and `d3-interpolate` dependencies, which were only ever used for the now-removed re-exports.
+
 ### Performance
 
 - `gp-uploader.js`: Replaced O(n) byte-by-byte string concatenation loop with `TextDecoder.decode()` when converting the fetched `ArrayBuffer` to text. This is significantly faster for large JSON/TSV files and correctly handles multi-byte UTF-8 characters (the old loop was effectively Latin-1).

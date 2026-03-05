@@ -1,5 +1,5 @@
 import "regenerator-runtime/runtime";
-import { tsvParseRows, select } from "./d3";
+import { tsvParseRows } from "./d3";
 
 const isLineOK = (line) => line.length === 3;
 
@@ -146,8 +146,7 @@ function concat(arrays) {
   return newArray.buffer;
 }
 export class FileGetter {
-  constructor({ element = "body", viewer }) {
-    this.base = select(element);
+  constructor({ viewer }) {
     this.files = {};
     this.isActive = false;
     this.viewer = viewer;

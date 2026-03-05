@@ -80,10 +80,7 @@ export default class GenomePropertiesViewer {
     this.erz_change_callback = null;
 
     this.modal = new GPModal(element_selector);
-    this.fileGetter = new FileGetter({
-      element: ".gp-modal-content",
-      viewer: this,
-    });
+    this.fileGetter = new FileGetter({ viewer: this });
 
     if (width === null) {
       const rect = d3.select(element_selector).node().getBoundingClientRect();
@@ -124,7 +121,6 @@ export default class GenomePropertiesViewer {
     this.column_total_width = cell_side;
     this.x = d3.scaleLinear().range([0, cell_side]);
     this.y = d3.scaleBand().range([cell_side, cell_side]);
-    this.gp_values = ["YES", "PARTIAL", "NO"];
     this.c = {
       YES: "rgb(49, 130, 189)",
       PARTIAL: "rgb(107, 174, 214)",
