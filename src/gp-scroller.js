@@ -123,5 +123,4 @@ const updateScrollBarX = (viewer, visible_cols, current_col) => {
  */
 export const updateScrollBars = (viewer, visible_cols, current_col) => {
   updateScrollBarX(viewer, visible_cols, current_col);
-  // updateScrollBarY(viewer);
 };

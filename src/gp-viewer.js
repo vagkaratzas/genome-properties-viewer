@@ -4,11 +4,8 @@ import ZoomPanel from "./zoomer";
 import TaxonomySortButton from "./gp-taxonomy-sorter";
 import GenomePropertiesController from "./gp-controller";
 import { updateStepToggler, updateSteps } from "./gp-steps";
-import "regenerator-runtime/runtime";
-
 import {
   drawScrollXBar,
-  // drawScrollYBar,
   transformByScroll,
   updateScrollBars,
 } from "./gp-scroller";
@@ -83,16 +80,12 @@ export default class GenomePropertiesViewer {
     this.erz_change_callback = null;
 
     this.modal = new GPModal(element_selector);
+    this.fileGetter = new FileGetter({ element: ".gp-modal-content", viewer: this });
 
-    this.fileGetter = new FileGetter({
-      element: ".gp-modal-content",
-      viewer: this,
-    });
     if (width === null) {
       const rect = d3.select(element_selector).node().getBoundingClientRect();
       width = rect.width;
     }
-
     if (!this.fixedHeight) {
       let rect = d3.select(element_selector).node().getBoundingClientRect();
       if (rect.height < 1) {
@@ -103,25 +96,17 @@ export default class GenomePropertiesViewer {
     }
 
     this.options = {
-      width,
-      height,
-      element_selector,
-      cell_side,
-      server,
-      gp_server,
-      server_tax,
-      total_panel_height,
-      hierarchy_path,
-      template_link_to_GP_page,
-      dimensions,
-      erz_path,
-      erz_merged_path,
+      width, height, element_selector, cell_side, server, gp_server,
+      server_tax, total_panel_height, hierarchy_path, model_species_path,
+      template_link_to_GP_page, dimensions, erz_path, erz_merged_path,
+      controller_element_selector, legends_element_selector,
+      gp_text_filter_selector, gp_label_selector, tax_label_selector,
+      tax_search_selector,
     };
+
     this.column_total_width = cell_side;
     this.x = d3.scaleLinear().range([0, cell_side]);
     this.y = d3.scaleBand().range([cell_side, cell_side]);
-    // this.x = d3.scaleBand().range([0, width - this.column_total_width]);
-    // this.y = d3.scaleLinear().range([0, cell_side]);
     this.gp_values = ["YES", "PARTIAL", "NO"];
     this.c = {
       YES: "rgb(49, 130, 189)",
@@ -141,6 +126,17 @@ export default class GenomePropertiesViewer {
           this.whitelist = data;
         });
     }
+
+    this._createSVG();
+    this._initTaxonomy();
+    this._initHierarchy();
+    this._initControls();
+    this._drawLayout();
+    window.addEventListener("resize", () => this.refresh_size());
+  }
+
+  _createSVG() {
+    const { element_selector, width, height } = this.options;
     this.svg = d3
       .select(element_selector)
       .append("svg")
@@ -182,35 +178,38 @@ export default class GenomePropertiesViewer {
       .on("keyup", () => {
         this.step = 1;
       });
+
     this.mainGroup.x = 0;
     this.mainGroup.y = 0;
     createGradient(this);
+  }
 
+  _initTaxonomy() {
+    const { server_tax, dimensions, height } = this.options;
     this.gp_taxonomy = new GenomePropertiesTaxonomy({
       path: server_tax,
-      x: 30, // TODO: change for new margin
-      y: this.options.dimensions.total.short_side,
+      x: 30,
+      y: dimensions.total.short_side,
       height:
-        this.options.height -
-        this.options.dimensions.total.short_side -
-        this.options.dimensions.scroller.short_side,
-      width: this.options.dimensions.tree.width,
+        height -
+        dimensions.total.short_side -
+        dimensions.scroller.short_side,
+      width: dimensions.tree.width,
     })
       .on("changeOrder", (order) => {
         this.current_order = order;
         this.order_organisms_current_order();
       })
       .on("speciesRequested", (taxId) => {
-        // loadGenomePropertiesFile(this, taxId);
         enableSpeciesFromPreLoaded(this, taxId);
       })
-      .on("multipleSpaciesRequested", (taxa) => {
+      .on("multipleSpeciesRequested", (taxa) => {
         for (const taxId of taxa) {
           enableSpeciesFromPreLoaded(this, taxId, false, false);
         }
         this.update_viewer(500);
       })
-      .on("removeSpacies", (event, taxId) => {
+      .on("removeSpecies", (event, taxId) => {
         event.stopPropagation();
         removeGenomePropertiesFile(this, taxId);
       })
@@ -222,10 +221,13 @@ export default class GenomePropertiesViewer {
     this.fileGetter.getJSON(server_tax).then((data) => {
       this.gp_taxonomy.load_taxonomy_obj(data);
     });
+  }
 
-    this.gp_hierarchy = new GenomePropertiesHierarchy()
-      // .load_hierarchy_from_path(this.options.hierarchy_path)
-      .on("switchChanged", () => {
+  _initHierarchy() {
+    const { hierarchy_path, model_species_path } = this.options;
+    this.gp_hierarchy = new GenomePropertiesHierarchy().on(
+      "switchChanged",
+      () => {
         this.mainGroup.y = 0;
         d3.select(".gpv-rows-group").attr(
           "transform",
@@ -233,26 +235,36 @@ export default class GenomePropertiesViewer {
         );
         this.update_viewer(500);
         updateTotalPerOrganismPanel(this);
-      });
+      }
+    );
     this.fileGetter.getJSON(hierarchy_path).then((data) => {
       this.gp_hierarchy.load_hierarchy_from_data(data);
       this.fileGetter.getJSON(model_species_path).then((dataSpecies) => {
         preloadSpecies(this, dataSpecies);
       });
     });
-    // if (hierarchy_path) {
-    //   this.gp_hierarchy.load_hierarchy_from_data(hierarchy_path);
-    //   this.fileGetter.getJSON(model_species_path).get(data => {
-    //     preloadSpecies(this, data);
-    //   });
-    // }
+  }
+
+  _initControls() {
+    const {
+      controller_element_selector,
+      legends_element_selector,
+      gp_text_filter_selector,
+      gp_label_selector,
+      tax_label_selector,
+      tax_search_selector,
+    } = this.options;
+
+    this.gp_label_type = "name";
+    this.buttonHeight = 25;
+
     this.sorter = new TaxonomySortButton({
       container: this.mainGroup,
       x: 0,
       y: 0,
       function_sort: (mode) => this.gp_taxonomy.sortBy(mode),
     });
-    this.buttonHeight = 25;
+
     this.zoomer = new ZoomPanel({
       x: 0,
       y: this.buttonHeight,
@@ -269,9 +281,6 @@ export default class GenomePropertiesViewer {
       },
     });
 
-    // this.legends_filter = { YES: "", NO: "", PARTIAL: "" };
-    this.gp_label_type = "name";
-
     this.controller = new GenomePropertiesController({
       gp_element_selector: controller_element_selector,
       legends_element_selector,
@@ -286,22 +295,23 @@ export default class GenomePropertiesViewer {
       this.legend_filters = filters;
       this.update_viewer();
     });
+
     this.gp_taxonomy.on("taxonomyLoaded", () =>
       this.controller.loadSearchOptions()
     );
+  }
 
+  _drawLayout() {
     this.current_scroll = { x: 0, y: 0 };
     this.draw_columns_panel();
     this.draw_rows_panel();
     drawMasks(this);
     this.gp_taxonomy.draw_tree_panel(this.mainGroup);
-    this.zoomer.draw_panel(); // TODO: check the new place
+    this.zoomer.draw_panel();
     this.sorter.draw();
     drawTotalPerOrganismPanel(this);
     drawScrollXBar(this);
-    // drawScrollYBar(this);
     drawDragArea(this);
-    window.addEventListener("resize", () => this.refresh_size());
   }
 
   refresh_size() {
@@ -445,7 +455,6 @@ export default class GenomePropertiesViewer {
       .data(this.current_props, (d) => d.property);
 
     new_column_p
-      // .transition(t)
       .attr(
         "transform",
         (d, i) =>
@@ -525,8 +534,7 @@ export default class GenomePropertiesViewer {
       .transition()
       .attr(
         "transform",
-        (d, i) =>
-          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`
+        (d, i) => `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`
       );
 
     const newRow = new_row_p
@@ -577,8 +585,9 @@ export default class GenomePropertiesViewer {
       .select(c[i])
       .selectAll(".top_level_gp")
       .data(gp.parent_top_properties, (d) => d);
-    const text_heigth = d3.select("text").node().getBBox().height;
-    let radius = (side - text_heigth) / 2 - 4;
+    const textNode = this.svg.select("text").node();
+    const text_height = textNode ? textNode.getBBox().height : 14;
+    let radius = (side - text_height) / 2 - 4;
     if (radius < 2) radius = 2;
     if (radius > 6) radius = 6;
 

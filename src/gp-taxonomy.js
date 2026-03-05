@@ -26,10 +26,10 @@ export default class GenomePropertiesTaxonomy {
     this.dispatcher = d3.dispatch(
       "changeOrder",
       "speciesRequested",
-      "multipleSpaciesRequested",
+      "multipleSpeciesRequested",
       "changeWidth",
       "taxonomyLoaded",
-      "removeSpacies"
+      "removeSpecies"
     );
     this.node_r = 6;
     this.tax_label_type = "name";
@@ -194,9 +194,6 @@ export default class GenomePropertiesTaxonomy {
       };
       this.root.children.push(this.nodes[tax_id]);
     }
-    // this.organisms.sort((a,b)=>{
-    //     return tax_loaded.indexOf(tax_loaded.indexOf(String(this.nodes[a].taxid))-tax_loaded.indexOf(String(this.nodes[b].taxid)));
-    // });
   }
 
   // A fake tree is created when the taxonomy is hidden.

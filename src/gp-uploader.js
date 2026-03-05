@@ -1,3 +1,4 @@
+import "regenerator-runtime/runtime";
 import { tsvParseRows, select } from "./d3";
 
 const isLineOK = (line) => line.length === 3;
@@ -175,7 +176,6 @@ export class FileGetter {
     };
     const { modal } = this.viewer;
     if (!this.isActive) this.createProgressContent(modal);
-    // this.activeGauge = path;
     const response = await fetch(path);
     this.files[path].request = response;
     const total = response.headers.get("content-length");

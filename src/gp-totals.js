@@ -1,7 +1,6 @@
 import * as d3 from "./d3";
 
 export const drawTotalPerOrganismPanel = (viewer) => {
-  // const ph = viewer.options.total_panel_height;
   viewer.total_g = viewer.mainGroup
     .append("g")
     .attr("class", "total-group")

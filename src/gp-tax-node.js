@@ -112,7 +112,7 @@ export default class TaxonomyNodeManager {
         }
         if (d.parent) {
           this.main.dispatcher.call(
-            "multipleSpaciesRequested",
+            "multipleSpeciesRequested",
             this.main,
             this.main.getLeaves(d.data)
           );
@@ -160,7 +160,6 @@ export default class TaxonomyNodeManager {
   draw_node(node, i, context) {
     const g = d3.select(context[i]);
     g.append("circle");
-    // g.attr("transform", d => "translate(" + d.x + "," + d.y + ")scale(0)")
     g.attr("transform", (d) => `translate(${d.x},${d.y})scale(0)`)
       .transition(this.t)
       .delay(300)
@@ -180,7 +179,6 @@ export default class TaxonomyNodeManager {
       .attr("x", -this.r / 2)
       .attr("y", this.r + 4)
       .style("text-anchor", "end")
-      // .style("transform", "rotate(-70deg)")
       .style("fill", (d) => (d.data.isFromFile ? "darkred" : null))
       .text((d) => {
         let label = "";
@@ -208,7 +206,7 @@ export default class TaxonomyNodeManager {
       .on("click", (event, d) => {
         if (d.data.loaded)
           this.main.dispatcher.call(
-            "removeSpacies",
+            "removeSpecies",
             this.main,
             event,
             d.data.taxid

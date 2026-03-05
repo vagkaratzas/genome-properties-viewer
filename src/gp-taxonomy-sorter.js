@@ -6,11 +6,7 @@ export default class TaxonomySortButton {
     top = 30,
     r = 10,
     function_sort = null,
-    // padding = 3,
-    // scrollH = 40,
-    // scrollW = 10,
     container = null,
-    // domain = [0, 100]
   }) {
     this.x = x;
     this.y = y;
@@ -71,7 +67,6 @@ export default class TaxonomySortButton {
       .attr("y1", barBottom)
       .attr("y2", (d) => barBottom - barMaxH * (d.id / this.modes.length))
       .merge(this.bars)
-      // .transition()
       .attr(
         "opacity",
         this.modes[this.currentMode].indexOf("tree") >= 0 ? 0.7 : 0.2
@@ -79,8 +74,6 @@ export default class TaxonomySortButton {
       .attr("x1", (d, i) => ((i + 3.6) * this.r) / 3)
       .attr("x2", (d, i) => ((i + 3.6) * this.r) / 3);
 
-    this.text
-      // .transition()
-      .text(this.texts[this.currentMode]);
+    this.text.text(this.texts[this.currentMode]);
   }
 }

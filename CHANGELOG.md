@@ -15,10 +15,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Renamed misspelled identifiers throughout the source (no behaviour change):
   - `dipatcher` → `dispatcher` (property on `GenomePropertiesTaxonomy`, `GenomePropertiesHierarchy`, `GenomePropertiesController`, and callers in `gp-tax-node.js`, `gp-ui-utils.js`)
-  - `spaciesRequested` → `speciesRequested` (dispatch event name in `gp-taxonomy.js`, `gp-tax-node.js`, `gp-viewer.js`)
-  - `siwtchChanged` → `switchChanged` (dispatch event name in `gp-hierarchy.js`, `gp-controller.js`, `gp-viewer.js`)
-  - `hierarchy_contorller` → `hierarchy_controller` (constructor parameter and property in `gp-controller.js`, `gp-viewer.js`)
+  - `spaciesRequested` → `speciesRequested` (dispatch event name)
+  - `multipleSpaciesRequested` → `multipleSpeciesRequested` (dispatch event name)
+  - `removeSpacies` → `removeSpecies` (dispatch event name)
+  - `siwtchChanged` → `switchChanged` (dispatch event name)
+  - `hierarchy_contorller` → `hierarchy_controller` (constructor parameter and property)
   - `circunferencia` → `circumference` (local variable in `gp-uploader.js`)
+  - `text_heigth` → `text_height` (local variable in `gp-viewer.js`)
+- `GenomePropertiesViewer` constructor refactored: the ~260-line constructor body is now split into four focused private methods — `_createSVG()`, `_initTaxonomy()`, `_initHierarchy()`, `_initControls()`, and `_drawLayout()` — leaving the constructor itself responsible only for state initialisation and option parsing. All controller-related options (`controller_element_selector`, `legends_element_selector`, etc.) that were previously only available as local constructor variables are now stored in `this.options`.
+- Removed dead commented-out code across `gp-viewer.js`, `gp-taxonomy.js`, `gp-taxonomy-sorter.js`, `gp-totals.js`, `gp-scroller.js`, `gp-uploader.js`, `gp-tax-node.js`, and `gp-controller.js`.
+- Removed vestigial `import "regenerator-runtime/runtime"` from `gp-viewer.js` (the polyfill was already removed from the bundle).
+- `gp-viewer.js`: `d3.select("text")` (which selected an arbitrary `<text>` element in the whole document) replaced with `this.svg.select("text")` scoped to the viewer's own SVG, with a safe `null` fallback.
 
 ### Fixed
 

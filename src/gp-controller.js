@@ -76,8 +76,6 @@ export default class GenomePropertiesController {
     this.search_options = this.gp_taxonomy.organisms.map(
       (e) => `${e}: ${this.gp_taxonomy.nodes[e].name}`
     );
-    // this.search_options.splice(0,0,...this.search_options.map(e=>this.gp_taxonomy.nodes[e].species))
-    // this.search_options = this.search_options.map(String);
   }
 
   draw_tooltip(event, items = null, first_time = false, header = null) {
@@ -104,7 +102,6 @@ export default class GenomePropertiesController {
       .text((d) => d.value);
 
     if (event) {
-      // const h = parent.node().getBoundingClientRect().height;
       const top = this.gp_viewer.options.cell_side / 2 + event.pageY;
       let left = Math.max(event.pageX - this.width / 2, 0);
       if (left + this.width > this.gp_viewer.options.width)
