@@ -155,7 +155,8 @@ export class FileGetter {
     setInterval(
       (_this) => {
         if (_this.activeGauges.length > 0)
-          _this.activeGauge = (_this.activeGauge + 1) % _this.activeGauges.length;
+          _this.activeGauge =
+            (_this.activeGauge + 1) % _this.activeGauges.length;
       },
       3000,
       this
