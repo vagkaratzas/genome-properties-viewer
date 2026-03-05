@@ -22,6 +22,9 @@ npm run jsdoc
 
 # Regenerate taxonomy.json from the database
 npm run create-taxonomy-file
+
+# Create the MERGED_JSON file for ERZ inputs (ERZ_MERGED.json) # TODO add steps properly
+npm run create-erz-merged
 ```
 
 There are no unit tests. Linting is the only automated quality check, enforced via Husky pre-commit and pre-push hooks.

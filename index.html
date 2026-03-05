@@ -19,7 +19,14 @@
     <h1>Genome Properties Viewer</h1>
     <div class="top-block">
         <div id="gp-controllers" class="top-controllers">
-            <div>
+            <div id="mode-selector">
+                <header>View Mode</header>
+                <ul>
+                    <li><label><input type="radio" name="viewer-mode" value="taxonomy" checked> Taxonomy Mode</label></li>
+                    <li><label><input type="radio" name="viewer-mode" value="erz"> ERZ Samples</label></li>
+                </ul>
+            </div>
+            <div id="taxonomy-panel">
                 <header>Taxonomy Options</header>
                 <ul>
                     <li><label for="tax-search">Search:</label><br/>
@@ -30,9 +37,7 @@
                         <input type="file" id="newfile" onchange="uploadFile()"/>
                     </li>
                     <li><input type="checkbox" id="collapse_tree" checked="checked"/><label for="collapse_tree">Collapse tree</label></li>
-                </div>
-                <div>
-                        <li><label for="tax_label">Labels:</label>
+                    <li><label for="tax_label">Labels:</label>
                         <select id="tax_label">
                             <option value="name">Species</option>
                             <option value="id">Tax ID</option>
@@ -40,8 +45,11 @@
                         </select>
                     </li>
                     <li><button id="toggle-tree">Hide Taxonomy</button></li>
-
                 </ul>
+            </div>
+            <div id="erz-panel" style="display:none">
+                <header>ERZ Samples</header>
+                <ul id="erz-list"></ul>
             </div>
             <div>
                 <header>Genome Properties Options</header>
@@ -79,6 +87,7 @@
                 controller_element_selector: "#gp-selector",
                 model_species_path: "https://raw.githubusercontent.com/ProteinsWebTeam/genome-properties-viewer/master/test-files/JSON_MERGED",
                 gp_server: 'http://wwwdev.ebi.ac.uk/interpro/genomeproperties/cgi-bin/test.pl',
+                erz_path: "test-files/ERZ",
             });
     viewer.update_viewer();
     d3.select("#upload-button").on("click", function() {
@@ -110,6 +119,49 @@
         setTimeout(function(){ viewer.refresh_size(); }, 250);
 
     });
+    var erzFiles = ["ERZ27321143", "ERZ773154"];
+    var selectedERZ = new Set();
+
+    function renderERZCheckboxes() {
+        var items = d3.select("#erz-list").selectAll("li")
+            .data(erzFiles, function(d) { return d; });
+        var li = items.enter().append("li");
+        var label = li.append("label");
+        label.append("input")
+            .attr("type", "checkbox")
+            .attr("value", function(d) { return d; })
+            .on("change", function(event, d) {
+                if (d3.select(this).property("checked")) {
+                    selectedERZ.add(d);
+                    viewer.enableERZ(d);
+                } else {
+                    selectedERZ.delete(d);
+                    viewer.removeERZ(d);
+                }
+            });
+        label.append("span").text(function(d) { return " " + d; });
+    }
+    renderERZCheckboxes();
+
+    viewer.erz_change_callback = function(organisms) {
+        selectedERZ.clear();
+        organisms.forEach(function(o) { selectedERZ.add(o); });
+        d3.select("#erz-list").selectAll("input[type=checkbox]")
+            .property("checked", function(d) { return selectedERZ.has(d); });
+    };
+
+    d3.selectAll('input[name="viewer-mode"]').on("change", function() {
+        if (this.value === "erz") {
+            d3.select("#taxonomy-panel").style("display", "none");
+            d3.select("#erz-panel").style("display", null);
+            viewer.switchToERZMode();
+        } else {
+            d3.select("#taxonomy-panel").style("display", null);
+            d3.select("#erz-panel").style("display", "none");
+            viewer.switchToTaxonomyMode();
+        }
+    });
+
     let showTaxonomy = true;
     d3.select("#toggle-tree").on("click",(event, d)=>{
         d3.select(event.currentTarget).text(showTaxonomy ? "Show Taxonomy" : "Hide Taxonomy");

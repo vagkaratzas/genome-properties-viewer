@@ -60,6 +60,8 @@ export default class GenomePropertiesViewer {
     tax_search_selector = "#tax-search",
     template_link_to_GP_page = "https://wwwdev.ebi.ac.uk/interpro/genomeproperties/#{}",
     gp_server = "http://wwwdev.ebi.ac.uk/interpro/genomeproperties/cgi-bin/test.pl",
+    erz_path = "test-files/ERZ",
+    erz_merged_path = "test-files/ERZ/ERZ_MERGED.json",
     dimensions = {
       tree: { width: 180 },
       total: { short_side: cell_side },
@@ -76,6 +78,9 @@ export default class GenomePropertiesViewer {
     this.whitelist = null;
     this.fixedHeight = height !== null;
     this.propsOrder = null;
+    this.erz_mode = false;
+    this._taxonomy_state = null;
+    this.erz_change_callback = null;
 
     this.modal = new GPModal(element_selector);
 
@@ -109,6 +114,8 @@ export default class GenomePropertiesViewer {
       hierarchy_path,
       template_link_to_GP_page,
       dimensions,
+      erz_path,
+      erz_merged_path,
     };
     this.column_total_width = cell_side;
     this.x = d3.scaleLinear().range([0, cell_side]);
@@ -544,6 +551,8 @@ export default class GenomePropertiesViewer {
     this.sorter.refresh();
     this.zoomer.refresh();
     if (!this.skip_scroll_refreshing) updateScrollBars(this, visible_cols, dx);
+    if (this.erz_mode && this.erz_change_callback)
+      this.erz_change_callback(this.organisms);
   }
 
   update_col(gp, i, c) {
@@ -720,5 +729,74 @@ export default class GenomePropertiesViewer {
 
   refresh() {
     transformByScroll(this);
+  }
+
+  async switchToERZMode() {
+    // Save taxonomy state so we can restore it later
+    const loaded_taxa = this.gp_taxonomy.nodes
+      ? Object.values(this.gp_taxonomy.nodes)
+          .filter((n) => n.loaded)
+          .map((n) => n.taxid)
+      : [];
+    this._taxonomy_state = {
+      data: this.data,
+      organism_totals: this.organism_totals,
+      propsOrder: this.propsOrder,
+      loaded_taxa,
+    };
+    // Unload all currently loaded taxonomy organisms from the tree
+    if (this.gp_taxonomy.nodes) {
+      Object.values(this.gp_taxonomy.nodes).forEach((n) => {
+        n.loaded = false;
+      });
+    }
+    this.organisms = [];
+    this.organism_totals = {};
+    this.propsOrder = null;
+    this.erz_mode = true;
+    this.gp_taxonomy.show_tree = false;
+
+    // Load the pre-built ERZ_MERGED.json (mirrors JSON_MERGED format,
+    // with step names sourced from JSON_MERGED via `npm run create-erz-merged`)
+    const data = await this.fileGetter.getJSON(this.options.erz_merged_path);
+    preloadSpecies(this, data);
+    this.update_viewer(0);
+  }
+
+  switchToTaxonomyMode() {
+    // Remove ERZ fake nodes that were added to the taxonomy
+    if (this.gp_taxonomy.nodes) {
+      const erzNodes = Object.values(this.gp_taxonomy.nodes).filter(
+        (n) => n.isFromFile
+      );
+      for (const node of erzNodes) {
+        this.gp_taxonomy.remove_organism_loaded(node.taxid, true);
+      }
+    }
+    // Restore saved taxonomy state
+    const state = this._taxonomy_state || {};
+    this.data = state.data || {};
+    this.organism_totals = state.organism_totals || {};
+    this.propsOrder = state.propsOrder || null;
+    // Re-mark previously loaded taxa
+    for (const taxId of state.loaded_taxa || []) {
+      if (this.gp_taxonomy.nodes && this.gp_taxonomy.nodes[taxId]) {
+        this.gp_taxonomy.nodes[taxId].loaded = true;
+      }
+    }
+    this._taxonomy_state = null;
+    this.erz_mode = false;
+    this.gp_taxonomy.show_tree = true;
+    this.update_viewer(0);
+  }
+
+  // Enable an ERZ organism from the pre-loaded ERZ_MERGED data
+  enableERZ(erzCode) {
+    enableSpeciesFromPreLoaded(this, erzCode, true, true);
+  }
+
+  // Remove an ERZ organism from the viewer
+  removeERZ(erzCode) {
+    removeGenomePropertiesFile(this, erzCode);
   }
 }

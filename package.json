@@ -12,7 +12,8 @@
     "create-taxonomy-file": "node src/taxonomy/taxonomy_retriever.js > taxonomy.json",
     "prettier": "prettier --write src/*",
     "prepare": "husky install",
-    "jsdoc": "jsdoc2md src/*.js > reference.md"
+    "jsdoc": "jsdoc2md src/*.js > reference.md",
+    "create-erz-merged": "node scripts/create-erz-merged.js"
   },
   "repository": {
     "type": "git",

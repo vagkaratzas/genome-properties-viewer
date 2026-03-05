@@ -220,20 +220,17 @@ div.gp-modal-content.gp-modal-active {
   position: fixed;
   left: 50%;
   top: 50%;
+  transform: translate(-50%, -50%);
   pointer-events: none;
+  max-height: 80vh;
+  width: 80vw;
+  overflow-y: auto;
 }
 .gp-modal-content {
-  position: relative;
-  width: 80vw;
   min-height: 100px;
-  height: 100%;
-  max-height: 80vh;
   background: white;
-  top: -10vh;
-  left: -50%;
   opacity: 0;
   pointer-events: none;
-  overflow: scroll;
 }
 
 .progress-panel {
