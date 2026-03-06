@@ -75,7 +75,7 @@ class ZoomPanel {
       "+",
       this.centerX,
       this.top,
-      this.r
+      this.r,
     ).on("click", this.function_plus);
     this.zoom_panel
       .append("line")
@@ -99,7 +99,7 @@ class ZoomPanel {
       "-",
       this.centerX,
       this.top + 2 * this.r + 2 * this.padding + this.scrollH,
-      this.r
+      this.r,
     ).on("click", this.function_less);
   }
 

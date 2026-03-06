@@ -22,6 +22,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `coverage/` added to `.gitignore`.
 - `README.md`: new *Development → Testing* section documenting how to run tests and linting.
 
+### Security / Dependencies
+
+- **Dropped IE 11 support** and removed the entire Babel transpilation stack (`@babel/cli`, `@babel/core`, `@babel/preset-env`, `rollup-plugin-babel`, `src/.babelrc`). IE 11 was retired in June 2022; keeping the stack served no purpose and introduced multiple critical and high-severity vulnerabilities (`@babel/traverse`, `@babel/helpers`, `@babel/runtime`, `@nicolo-ribaudo/chokidar-2`). The bundle now ships native ES2020+.
+- Removed `regenerator-runtime` (production dependency) and `regenerator` (dev dependency) — these were polyfills for the now-removed Babel transpilation.
+- Removed `js-autocomplete-tremby` (production dependency) — was never imported in any source file.
+- Replaced deprecated `rollup-plugin-node-resolve` (v5, unmaintained) with the official `@rollup/plugin-node-resolve` (v16). Renamed `rollup.config.js` → `rollup.config.mjs` to make its ES module syntax explicit.
+- Updated all **D3 sub-packages** from v2 to v3 (equivalent to D3 v7), resolving the `d3-color` ReDoS vulnerability: `d3-array`, `d3-dispatch`, `d3-drag`, `d3-dsv`, `d3-hierarchy`, `d3-scale`, `d3-scale-chromatic`, `d3-selection`, `d3-shape`, `d3-timer`, `d3-transition`.
+- Updated **build / dev toolchain**: `rollup` 2→4, `eslint` 7→8, `eslint-config-airbnb-base` 14→15, `eslint-config-prettier` 8→10, `eslint-plugin-import` 2.22→2.32, `husky` 5→9, `prettier` 2→3, `browser-sync` 2→3, `jsdoc-to-markdown` 7→9.
+- Updated husky hook scripts to v9 format (removed the `_/husky.sh` helper sourcing; hooks are now plain shell scripts). Updated `prepare` script from `husky install` to `husky`.
+- **Remaining 3 vulnerabilities** (high): all in `browser-sync`'s `immutable` transitive dependency. The suggested fix (`npm audit fix --force`) would downgrade browser-sync to v1.9.2, which reintroduces far worse issues. These are accepted as browser-sync is a local-only dev server, never deployed.
+
 ### Removed
 
 - `gp-uploader.js`: `FileGetter` was importing `select` from d3 to set `this.base`, which was never read after construction. Removed `this.base`, the `select` import, and the now-unused `element` constructor parameter.
@@ -51,12 +62,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `text_heigth` → `text_height` (local variable in `gp-viewer.js`)
 - `GenomePropertiesViewer` constructor refactored: the ~260-line constructor body is now split into four focused private methods — `_createSVG()`, `_initTaxonomy()`, `_initHierarchy()`, `_initControls()`, and `_drawLayout()` — leaving the constructor itself responsible only for state initialisation and option parsing. All controller-related options (`controller_element_selector`, `legends_element_selector`, etc.) that were previously only available as local constructor variables are now stored in `this.options`.
 - Removed dead commented-out code across `gp-viewer.js`, `gp-taxonomy.js`, `gp-taxonomy-sorter.js`, `gp-totals.js`, `gp-scroller.js`, `gp-uploader.js`, `gp-tax-node.js`, and `gp-controller.js`.
-- Removed vestigial `import "regenerator-runtime/runtime"` from `gp-viewer.js` (the polyfill was already removed from the bundle).
+- Removed the remaining vestigial `import "regenerator-runtime/runtime"` from `gp-uploader.js` (the last stale polyfill import after the Babel removal).
 - `gp-viewer.js`: `d3.select("text")` (which selected an arbitrary `<text>` element in the whole document) replaced with `this.svg.select("text")` scoped to the viewer's own SVG, with a safe `null` fallback.
 
 ### Fixed
 
 - `zoomer.js`: Zoom +/- button labels (`<text>` SVG elements) were intercepting pointer events, preventing clicks from reaching the underlying `<circle>` that held the click handler. Fixed by adding `pointer-events: none` to the text elements.
+- `gp-hierarchy.js`, `gp-taxonomy.js`: Removed redundant `return this` at the end of each constructor (constructors always return `this` implicitly; the explicit return was flagged by the updated `no-constructor-return` ESLint rule).
 - `gp-viewer.js`: Whitelist file was never parsed — `response.json` (property reference) corrected to `response.json()` (method call).
 - `gp-taxonomy.js`: Same `response.json` → `response.json()` fix in the unused `load_taxonomy()` method.
 - `gp-hierarchy.js`: Same `response.json` → `response.json()` fix in the unused `load_hierarchy_from_path()` method.

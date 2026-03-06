@@ -68,7 +68,7 @@ export const filterByText = (viewer) => {
         e.name.toLowerCase().indexOf(viewer.filter_text.toLowerCase()) !== -1 ||
         String(e.property)
           .toLowerCase()
-          .indexOf(viewer.filter_text.toLowerCase()) !== -1
+          .indexOf(viewer.filter_text.toLowerCase()) !== -1,
     );
   }
 };

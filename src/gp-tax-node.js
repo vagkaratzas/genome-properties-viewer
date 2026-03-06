@@ -21,7 +21,7 @@ export default class TaxonomyNodeManager {
         this.main.dispatcher.call(
           "changeOrder",
           this.main,
-          this.main.current_order
+          this.main.current_order,
         );
       }
     };
@@ -44,7 +44,7 @@ export default class TaxonomyNodeManager {
         (d) =>
           `node ${d.children ? " node--internal" : " node--leaf"}${
             d.data.loaded ? " loaded" : ""
-          }`
+          }`,
       )
       .style("fill-opacity", (d) => (d.data.id === "fake-root" ? 0 : null))
       .transition(t)
@@ -59,12 +59,12 @@ export default class TaxonomyNodeManager {
         (d) =>
           `node ${d.children ? " node--internal" : " node--leaf"}${
             d.data.loaded ? " loaded" : ""
-          }`
+          }`,
       )
       .style("fill-opacity", (d) => (d.data.id === "fake-root" ? 0 : null))
       .on("mouseover", (event, d) => {
         d3.select("#info_organism").text(
-          `${d.label}${d.data.taxid ? ` - ${d.data.taxid}` : ""}`
+          `${d.label}${d.data.taxid ? ` - ${d.data.taxid}` : ""}`,
         );
         d3.select(event.currentTarget)
           .selectAll("circle")
@@ -91,7 +91,7 @@ export default class TaxonomyNodeManager {
           this.main.dispatcher.call(
             "speciesRequested",
             this.main,
-            d.data.taxid
+            d.data.taxid,
           );
         }
         if (d.parent) {
@@ -107,14 +107,14 @@ export default class TaxonomyNodeManager {
           this.main.dispatcher.call(
             "speciesRequested",
             this.main,
-            d.data.taxid
+            d.data.taxid,
           );
         }
         if (d.parent) {
           this.main.dispatcher.call(
             "multipleSpeciesRequested",
             this.main,
-            this.main.getLeaves(d.data)
+            this.main.getLeaves(d.data),
           );
         }
       })
@@ -149,10 +149,10 @@ export default class TaxonomyNodeManager {
               const time = d3.transition().duration(500);
               g.transition(time).attr(
                 "transform",
-                (p) => `translate(${p.x},${p.y})`
+                (p) => `translate(${p.x},${p.y})`,
               );
             }
-          })
+          }),
       )
       .each((d, i, c) => this.draw_node(d, i, c));
   }
@@ -171,7 +171,7 @@ export default class TaxonomyNodeManager {
       .attr("y", -this.r)
       .style("text-anchor", "end")
       .text((d) =>
-        d.data.number_of_leaves > 1 ? d.data.number_of_leaves : ""
+        d.data.number_of_leaves > 1 ? d.data.number_of_leaves : "",
       );
 
     g.append("text")
@@ -209,7 +209,7 @@ export default class TaxonomyNodeManager {
             "removeSpecies",
             this.main,
             event,
-            d.data.taxid
+            d.data.taxid,
           );
       });
 

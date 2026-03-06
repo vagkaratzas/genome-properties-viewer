@@ -69,7 +69,7 @@ describe("GenomePropertiesTaxonomy", () => {
       loadWithMockedRender(tax, MOCK_TAX_DATA);
       // Object keys are always strings, even when the original value was a number
       expect(Object.keys(tax.nodes)).toEqual(
-        expect.arrayContaining(["root", "9606", "10090"])
+        expect.arrayContaining(["root", "9606", "10090"]),
       );
     });
 

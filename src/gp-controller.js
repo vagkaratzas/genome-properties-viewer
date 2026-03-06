@@ -27,7 +27,7 @@ export default class GenomePropertiesController {
       if (this.hierarchy_controller.root) this.draw_hierarchy_selector();
       else
         this.hierarchy_controller.on("hierarchyLoaded", () =>
-          this.draw_hierarchy_selector()
+          this.draw_hierarchy_selector(),
         );
     }
 
@@ -74,7 +74,7 @@ export default class GenomePropertiesController {
 
   loadSearchOptions() {
     this.search_options = this.gp_taxonomy.organisms.map(
-      (e) => `${e}: ${this.gp_taxonomy.nodes[e].name}`
+      (e) => `${e}: ${this.gp_taxonomy.nodes[e].name}`,
     );
   }
 
@@ -117,7 +117,7 @@ export default class GenomePropertiesController {
   draw_legends(total = { YES: 0, NO: 0, PARTIAL: 0 }) {
     const legend_item = this.legends_component.selectAll("li").data(
       d3.entries(total).sort((a, b) => (a.key > b.key ? -1 : 1)),
-      (d) => d.key
+      (d) => d.key,
     );
 
     const legends_filter = { YES: "", NO: "", PARTIAL: "" };
@@ -135,7 +135,7 @@ export default class GenomePropertiesController {
       .attr("class", "color")
       .style("background", (d) => this.gp_viewer.c[d.key])
       .style("color", (d) =>
-        d.key === "NO" ? "rgb(49, 130, 189)" : "rgb(230,230,230)"
+        d.key === "NO" ? "rgb(49, 130, 189)" : "rgb(230,230,230)",
       )
       .style("cursor", "pointer")
       .attr("type", "")
@@ -146,7 +146,7 @@ export default class GenomePropertiesController {
 
         e.classed("filter", filter_symbols[n] !== "").attr(
           "type",
-          filter_symbols[n]
+          filter_symbols[n],
         );
         legends_filter[d.key] = filter_symbols[n];
         this.moveScrollUp();
@@ -161,8 +161,8 @@ export default class GenomePropertiesController {
             "∄": `There is not a single species in each row with the value (${d.key})`,
           },
           false,
-          "Click in this area to apply one of the following filters"
-        )
+          "Click in this area to apply one of the following filters",
+        ),
       )
       .on("mouseout", () => this.draw_tooltip())
       .append("div")
@@ -200,7 +200,7 @@ export default class GenomePropertiesController {
       .style("background", (d) => this.hierarchy_controller.color(d.id))
       .style(
         "border",
-        (d) => `2px solid ${this.hierarchy_controller.color(d.id)}`
+        (d) => `2px solid ${this.hierarchy_controller.color(d.id)}`,
       )
       .style("border-radius", "50%")
       .on("click", (event, d) => this.update(d));
@@ -215,19 +215,19 @@ export default class GenomePropertiesController {
     this.moveScrollUp();
     if (d === "ALL" || d === "NONE") {
       this.hierarchy_controller.hierarchy_switch.forEach(
-        (e) => (e.enable = d === "ALL")
+        (e) => (e.enable = d === "ALL"),
       );
       this.hierarchy_controller.dispatcher.call(
         "switchChanged",
         this,
-        this.hierarchy_switch
+        this.hierarchy_switch,
       );
       this.gp_component.select(".current_status").html(d.toLowerCase());
     } else {
       this.hierarchy_controller.toggle_switch(d);
       this.gp_component.select(".current_status").text("");
       selected = this.hierarchy_controller.hierarchy_switch.filter(
-        (e) => e.enable
+        (e) => e.enable,
       );
       if (selected.length === 0)
         this.gp_component.select(".current_status").text("none");
@@ -249,7 +249,7 @@ export default class GenomePropertiesController {
           .style("margin-left", "2px")
           .style("display", "inline-block")
           .style("background", (item) =>
-            this.hierarchy_controller.color(item.id)
+            this.hierarchy_controller.color(item.id),
           )
           .style("border-radius", "50%");
         samples.exit().remove();
@@ -259,7 +259,7 @@ export default class GenomePropertiesController {
       .select(".options ul")
       .selectAll(".top-level-option div")
       .style("background", (item) =>
-        item.enable ? this.hierarchy_controller.color(item.id) : "#e3e3e3"
+        item.enable ? this.hierarchy_controller.color(item.id) : "#e3e3e3",
       );
   }
 

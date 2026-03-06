@@ -29,12 +29,11 @@ export default class GenomePropertiesTaxonomy {
       "multipleSpeciesRequested",
       "changeWidth",
       "taxonomyLoaded",
-      "removeSpecies"
+      "removeSpecies",
     );
     this.node_r = 6;
     this.tax_label_type = "name";
     this.node_manager = new TaxonomyNodeManager(this, this.node_r);
-    return this;
   }
 
   load_taxonomy() {
@@ -272,12 +271,12 @@ export default class GenomePropertiesTaxonomy {
       tree1: d3
         .range(ol)
         .sort((a, b) =>
-          leaves[a].data.lineage > leaves[b].data.lineage ? 1 : -1
+          leaves[a].data.lineage > leaves[b].data.lineage ? 1 : -1,
         ),
       tree2: d3
         .range(ol)
         .sort((a, b) =>
-          leaves[a].data.lineage > leaves[b].data.lineage ? -1 : 1
+          leaves[a].data.lineage > leaves[b].data.lineage ? -1 : 1,
         ),
     };
     if (!this.current_order || this.current_order.length !== leaves.length)
@@ -297,7 +296,7 @@ export default class GenomePropertiesTaxonomy {
         (d) =>
           d.data.expanded ||
           d.parent.data.expanded ||
-          d.parent.has_loaded_leaves
+          d.parent.has_loaded_leaves,
       );
 
     const link = this.tree_g
@@ -305,7 +304,7 @@ export default class GenomePropertiesTaxonomy {
       .data(root.links(), (d) =>
         d.source.data.id > d.target.data.id
           ? d.source.data.id + d.target.data.id
-          : d.target.data.id + d.source.data.id
+          : d.target.data.id + d.source.data.id,
       );
 
     link
@@ -316,7 +315,7 @@ export default class GenomePropertiesTaxonomy {
         (d) =>
           `M${d.source.x},${d.source.y}H${d.source.x + 10}V${d.target.y}H${
             d.target.x
-          }`
+          }`,
       );
 
     link.exit().transition(t).attr("stroke-dashoffset", -1000).remove();
@@ -329,7 +328,7 @@ export default class GenomePropertiesTaxonomy {
         (d) =>
           `M${d.source.x},${d.source.y}H${d.source.x + 10}V${d.target.y}H${
             d.target.x
-          }`
+          }`,
       )
       .style("stroke", (d) =>
         d.target.data.isFromFile ||
@@ -338,7 +337,7 @@ export default class GenomePropertiesTaxonomy {
           d.target.data.parent.data &&
           d.target.data.parent.data.taxid === "fake-root")
           ? "transparent"
-          : null
+          : null,
       )
       .attr("stroke-dasharray", 1000)
       .attr("stroke-dashoffset", -1000)

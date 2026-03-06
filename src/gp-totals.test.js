@@ -12,7 +12,7 @@ describe("refreshGPTotals", () => {
   it("counts YES, NO and PARTIAL correctly across organisms", () => {
     const viewer = makeViewer(
       ["111", "222", "333"],
-      [["GenProp0001", { 111: "YES", 222: "YES", 333: "NO", TOTAL: {} }]]
+      [["GenProp0001", { 111: "YES", 222: "YES", 333: "NO", TOTAL: {} }]],
     );
     refreshGPTotals(viewer);
     expect(viewer.props[0].values.TOTAL).toEqual({ YES: 2, NO: 1, PARTIAL: 0 });
@@ -21,7 +21,7 @@ describe("refreshGPTotals", () => {
   it("handles all PARTIAL", () => {
     const viewer = makeViewer(
       ["111", "222"],
-      [["GenProp0001", { 111: "PARTIAL", 222: "PARTIAL", TOTAL: {} }]]
+      [["GenProp0001", { 111: "PARTIAL", 222: "PARTIAL", TOTAL: {} }]],
     );
     refreshGPTotals(viewer);
     expect(viewer.props[0].values.TOTAL).toEqual({ YES: 0, NO: 0, PARTIAL: 2 });
@@ -30,7 +30,7 @@ describe("refreshGPTotals", () => {
   it("handles a single organism", () => {
     const viewer = makeViewer(
       ["111"],
-      [["GenProp0001", { 111: "YES", TOTAL: {} }]]
+      [["GenProp0001", { 111: "YES", TOTAL: {} }]],
     );
     refreshGPTotals(viewer);
     expect(viewer.props[0].values.TOTAL).toEqual({ YES: 1, NO: 0, PARTIAL: 0 });
@@ -43,7 +43,7 @@ describe("refreshGPTotals", () => {
         ["GenProp0001", { 111: "YES", 222: "NO", TOTAL: {} }],
         ["GenProp0002", { 111: "NO", 222: "NO", TOTAL: {} }],
         ["GenProp0003", { 111: "PARTIAL", 222: "YES", TOTAL: {} }],
-      ]
+      ],
     );
     refreshGPTotals(viewer);
     expect(viewer.props[0].values.TOTAL).toEqual({ YES: 1, NO: 1, PARTIAL: 0 });
@@ -55,7 +55,7 @@ describe("refreshGPTotals", () => {
     // "999" is in values but not in organisms — should not be counted
     const viewer = makeViewer(
       ["111"],
-      [["GenProp0001", { 111: "YES", 999: "NO", TOTAL: {} }]]
+      [["GenProp0001", { 111: "YES", 999: "NO", TOTAL: {} }]],
     );
     refreshGPTotals(viewer);
     expect(viewer.props[0].values.TOTAL).toEqual({ YES: 1, NO: 0, PARTIAL: 0 });
@@ -64,7 +64,7 @@ describe("refreshGPTotals", () => {
   it("overwrites a stale TOTAL on each call", () => {
     const viewer = makeViewer(
       ["111"],
-      [["GenProp0001", { 111: "NO", TOTAL: { YES: 99, NO: 0, PARTIAL: 0 } }]]
+      [["GenProp0001", { 111: "NO", TOTAL: { YES: 99, NO: 0, PARTIAL: 0 } }]],
     );
     refreshGPTotals(viewer);
     expect(viewer.props[0].values.TOTAL).toEqual({ YES: 0, NO: 1, PARTIAL: 0 });

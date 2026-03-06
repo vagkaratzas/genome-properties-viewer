@@ -31,7 +31,7 @@ describe("GPModal", () => {
 
     it("appends a .gp-modal-content element inside the popup", () => {
       expect(
-        container.querySelector(".gp-modal-popup .gp-modal-content")
+        container.querySelector(".gp-modal-popup .gp-modal-content"),
       ).not.toBeNull();
     });
 
@@ -47,17 +47,17 @@ describe("GPModal", () => {
       expect(
         container
           .querySelector(".gp-modal")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(true);
       expect(
         container
           .querySelector(".gp-modal-popup")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(true);
       expect(
         container
           .querySelector(".gp-modal-content")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(true);
     });
 
@@ -67,17 +67,17 @@ describe("GPModal", () => {
       expect(
         container
           .querySelector(".gp-modal")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(false);
       expect(
         container
           .querySelector(".gp-modal-popup")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(false);
       expect(
         container
           .querySelector(".gp-modal-content")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(false);
     });
 
@@ -99,7 +99,7 @@ describe("GPModal", () => {
     it("sets innerHTML of the content element", () => {
       modal.showContent("<p>hello</p>");
       expect(container.querySelector(".gp-modal-content").innerHTML).toBe(
-        "<p>hello</p>"
+        "<p>hello</p>",
       );
     });
 
@@ -108,7 +108,7 @@ describe("GPModal", () => {
       expect(
         container
           .querySelector(".gp-modal")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(true);
     });
 
@@ -118,7 +118,7 @@ describe("GPModal", () => {
       expect(
         container
           .querySelector(".gp-modal")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(false);
     });
 
@@ -128,7 +128,7 @@ describe("GPModal", () => {
       expect(
         container
           .querySelector(".gp-modal")
-          .classList.contains("gp-modal-active")
+          .classList.contains("gp-modal-active"),
       ).toBe(true);
     });
 

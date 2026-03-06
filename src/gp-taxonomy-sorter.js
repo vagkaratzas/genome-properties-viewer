@@ -33,7 +33,7 @@ export default class TaxonomySortButton {
         this.fakeData.sort((a, b) =>
           a[this.modes[this.currentMode]] > b[this.modes[this.currentMode]]
             ? 1
-            : -1
+            : -1,
         );
         this.refresh();
       });
@@ -69,7 +69,7 @@ export default class TaxonomySortButton {
       .merge(this.bars)
       .attr(
         "opacity",
-        this.modes[this.currentMode].indexOf("tree") >= 0 ? 0.7 : 0.2
+        this.modes[this.currentMode].indexOf("tree") >= 0 ? 0.7 : 0.2,
       )
       .attr("x1", (d, i) => ((i + 3.6) * this.r) / 3)
       .attr("x2", (d, i) => ((i + 3.6) * this.r) / 3);

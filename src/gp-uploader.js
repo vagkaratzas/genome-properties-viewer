@@ -1,4 +1,3 @@
-import "regenerator-runtime/runtime";
 import { tsvParseRows } from "./d3";
 
 const isLineOK = (line) => line.length === 3;
@@ -24,7 +23,7 @@ export const enableSpeciesFromPreLoaded = (
   viewer,
   taxId,
   isFromFile = false,
-  shouldUpdate = true
+  shouldUpdate = true,
 ) => {
   let tax_id = Number(taxId);
   if (Number.isNaN(tax_id)) tax_id = taxId;
@@ -38,13 +37,13 @@ export const loadGenomePropertiesText = (
   viewer,
   label,
   text,
-  isFromFile = false
+  isFromFile = false,
 ) => {
   try {
     const obj = JSON.parse(text);
     mergeObjectToData(viewer.data, obj);
     const objOrgs = Object.keys(Object.values(obj)[0].values).filter(
-      (x) => x !== "TOTAL"
+      (x) => x !== "TOTAL",
     );
     for (const org of objOrgs) {
       enableSpeciesFromPreLoaded(viewer, org, isFromFile);
@@ -71,7 +70,7 @@ export const loadGenomePropertiesText = (
           name: d[1],
           values: { TOTAL: { YES: 0, NO: 0, PARTIAL: 0 } },
           parent_top_properties: viewer.gp_hierarchy.get_top_level_gp_by_id(
-            d[0]
+            d[0],
           ),
           // TODO: Replace for actual steps information
           steps: d[0]
@@ -93,7 +92,7 @@ export const loadGenomePropertiesText = (
       viewer.organism_totals[tax_id][d[2]]++;
       // TODO: Replace for actual steps information
       viewer.data[d[0]].steps.forEach(
-        (step) => (step.values[tax_id] = Math.random() > 0.5)
+        (step) => (step.values[tax_id] = Math.random() > 0.5),
       );
     });
     if (allLinesAreOK) {
@@ -107,7 +106,7 @@ export const loadGenomePropertiesText = (
       throw new Error(
         `File didn't load. The following lines have errors:${errorLines
           .map((l) => l.join(": "))
-          .join("\n")}`
+          .join("\n")}`,
       );
     }
   }
@@ -117,7 +116,7 @@ export const preloadSpecies = (viewer, data) => {
   viewer.data = data;
   Object.values(viewer.data).forEach((gp) => {
     gp.parent_top_properties = viewer.gp_hierarchy.get_top_level_gp_by_id(
-      gp.property
+      gp.property,
     );
     gp.isShowingSteps = false;
   });
@@ -159,7 +158,7 @@ export class FileGetter {
             (_this.activeGauge + 1) % _this.activeGauges.length;
       },
       3000,
-      this
+      this,
     );
   }
 
@@ -251,7 +250,7 @@ export class FileGetter {
     this.gaugeLabel.text(
       this.activeGauges[this.activeGauge]
         ? this.activeGauges[this.activeGauge].path
-        : ""
+        : "",
     );
 
     const requestDiv = this.requestsList
@@ -266,7 +265,7 @@ export class FileGetter {
         (d) => `${d.path}: 
         ${d.progress ? (d.progress * 100).toFixed(1) : " ? "}% 
         - ${d.event ? d.event.loaded : "_"}/${(d.event && d.event.total) || "?"}
-       `
+       `,
       );
 
     const w = this.gaugeSVG.node().getBoundingClientRect().width;
@@ -318,7 +317,7 @@ export class FileGetter {
       .attr("stroke-dashoffset", (d) =>
         d.progress === null
           ? circumference / 2
-          : circumference * (1 - d.progress)
+          : circumference * (1 - d.progress),
       );
   }
 }
@@ -350,7 +349,7 @@ export const uploadLocalGPFile = (viewer, fileToRead) => {
       if (isIpproLine(firstline)) {
         viewer.modal.showContent(
           "<h3><div class='loading'>◉</div>Calculation Genome Properties from InterProScan Data</h3>",
-          true
+          true,
         );
 
         fetch(viewer.options.gp_server, {
@@ -370,13 +369,13 @@ export const uploadLocalGPFile = (viewer, fileToRead) => {
           .catch(() => {
             viewer.modal.showContent(
               "<h3><div class='error'>Server Error processing the file</div></h3>",
-              false
+              false,
             );
           });
       } else {
         viewer.loadGenomePropertiesText(
           reader.fileToRead.name,
-          evt.target.result
+          evt.target.result,
         );
       }
     } catch (e) {

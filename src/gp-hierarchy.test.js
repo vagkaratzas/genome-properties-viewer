@@ -52,7 +52,7 @@ describe("GenomePropertiesHierarchy", () => {
           "ChildA1",
           "ChildA2",
           "ChildB1",
-        ])
+        ]),
       );
     });
 
@@ -64,7 +64,7 @@ describe("GenomePropertiesHierarchy", () => {
       expect(hier.hierarchy_switch).toHaveLength(2);
       expect(hier.hierarchy_switch.every((s) => s.enable)).toBe(true);
       expect(hier.hierarchy_switch.map((s) => s.id)).toEqual(
-        expect.arrayContaining(["TopA", "TopB"])
+        expect.arrayContaining(["TopA", "TopB"]),
       );
     });
 

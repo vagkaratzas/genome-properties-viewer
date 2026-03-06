@@ -68,7 +68,7 @@ describe("drawScrollXBar", () => {
   it("sets viewer.scrollbar_x_bg to the background rect selection", () => {
     expect(viewer.scrollbar_x_bg).toBeDefined();
     expect(viewer.scrollbar_x_bg.node()).toBe(
-      svgNode.querySelector("rect.gpv-scrollbar-bg")
+      svgNode.querySelector("rect.gpv-scrollbar-bg"),
     );
   });
 
@@ -84,7 +84,7 @@ describe("drawScrollXBar", () => {
   it("sets viewer.scrollbar_x to the handle rect selection", () => {
     expect(viewer.scrollbar_x).toBeDefined();
     expect(viewer.scrollbar_x.node()).toBe(
-      svgNode.querySelector("rect.gpv-scrollbar-handle")
+      svgNode.querySelector("rect.gpv-scrollbar-handle"),
     );
   });
 

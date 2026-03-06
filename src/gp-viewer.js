@@ -242,11 +242,11 @@ export default class GenomePropertiesViewer {
         this.mainGroup.y = 0;
         d3.select(".gpv-rows-group").attr(
           "transform",
-          `translate(${this.mainGroup.x},${this.mainGroup.y})`
+          `translate(${this.mainGroup.x},${this.mainGroup.y})`,
         );
         this.update_viewer(500);
         updateTotalPerOrganismPanel(this);
-      }
+      },
     );
     this.fileGetter.getJSON(hierarchy_path).then((data) => {
       this.gp_hierarchy.load_hierarchy_from_data(data);
@@ -286,7 +286,7 @@ export default class GenomePropertiesViewer {
       function_slide: (event) => {
         const newY = Math.max(
           this.zoomer.slider(this.zoomer.domain[1]),
-          Math.min(event.y, this.zoomer.slider(this.zoomer.domain[0]))
+          Math.min(event.y, this.zoomer.slider(this.zoomer.domain[0])),
         );
         this.cell_side = Math.round(this.zoomer.slider.invert(newY));
       },
@@ -308,7 +308,7 @@ export default class GenomePropertiesViewer {
     });
 
     this.gp_taxonomy.on("taxonomyLoaded", () =>
-      this.controller.loadSearchOptions()
+      this.controller.loadSearchOptions(),
     );
   }
 
@@ -356,14 +356,14 @@ export default class GenomePropertiesViewer {
     const limY = this.newCols.node().getBBox().height - this.options.height;
     this.current_scroll.y = Math.max(
       0,
-      Math.min(limY, this.current_scroll.y + dy)
+      Math.min(limY, this.current_scroll.y + dy),
     );
     this.current_scroll.x = Math.max(
       -tw +
         this.options.width -
         this.options.dimensions.tree.width -
         this.options.cell_side,
-      Math.min(0, this.current_scroll.x + dx)
+      Math.min(0, this.current_scroll.x + dx),
     );
     this.refresh(this);
   }
@@ -426,7 +426,7 @@ export default class GenomePropertiesViewer {
       this.props = this.props.sort(
         (a, b) =>
           this.propsOrder.indexOf(a.property) -
-          this.propsOrder.indexOf(b.property)
+          this.propsOrder.indexOf(b.property),
       );
     }
   }
@@ -452,7 +452,7 @@ export default class GenomePropertiesViewer {
       (gp, i) =>
         this.x(i + 1) + this.current_scroll.x >= 0 &&
         this.x(i) + this.current_scroll.x <
-          this.options.width - this.options.dimensions.tree.width
+          this.options.width - this.options.dimensions.tree.width,
     );
     const dx = this.props.indexOf(this.current_props[0]);
     const visible_cols = this.current_props.length;
@@ -471,7 +471,7 @@ export default class GenomePropertiesViewer {
         (d, i) =>
           `translate(${this.x(i + dx) + this.options.dimensions.tree.width}, ${
             this.options.dimensions.total.short_side
-          })`
+          })`,
       )
       .each((d, i, c) => this.update_col(d, i, c));
 
@@ -491,7 +491,7 @@ export default class GenomePropertiesViewer {
       (d, i) =>
         `translate(${this.x(i + dx) + this.options.dimensions.tree.width}, ${
           this.options.dimensions.total.short_side
-        })`
+        })`,
     );
 
     d3.selectAll("g.column line")
@@ -546,7 +546,7 @@ export default class GenomePropertiesViewer {
       .attr(
         "transform",
         (d, i) =>
-          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`
+          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`,
       );
 
     const newRow = new_row_p
@@ -556,7 +556,7 @@ export default class GenomePropertiesViewer {
       .attr(
         "transform",
         (d, i) =>
-          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`
+          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`,
       );
 
     new_row_p
@@ -679,7 +679,7 @@ export default class GenomePropertiesViewer {
 
     cells_t.attr(
       "transform",
-      () => `translate(${cell_width * 0.5}, ${side * -0.5})`
+      () => `translate(${cell_width * 0.5}, ${side * -0.5})`,
     );
 
     cells_t
@@ -790,7 +790,7 @@ export default class GenomePropertiesViewer {
     // Remove ERZ fake nodes that were added to the taxonomy
     if (this.gp_taxonomy.nodes) {
       const erzNodes = Object.values(this.gp_taxonomy.nodes).filter(
-        (n) => n.isFromFile
+        (n) => n.isFromFile,
       );
       for (const node of erzNodes) {
         this.gp_taxonomy.remove_organism_loaded(node.taxid, true);

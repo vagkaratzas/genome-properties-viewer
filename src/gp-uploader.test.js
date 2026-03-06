@@ -78,7 +78,7 @@ describe("enableSpeciesFromPreLoaded", () => {
     enableSpeciesFromPreLoaded(viewer, "9606", true);
     expect(viewer.gp_taxonomy.set_organisms_loaded).toHaveBeenCalledWith(
       9606,
-      true
+      true,
     );
   });
 
@@ -338,7 +338,7 @@ describe("removeGenomePropertiesFile", () => {
     expect(viewer.organisms).not.toContain("myfile.gp");
     expect(viewer.gp_taxonomy.remove_organism_loaded).toHaveBeenCalledWith(
       "myfile.gp",
-      true
+      true,
     );
   });
 
@@ -350,7 +350,7 @@ describe("removeGenomePropertiesFile", () => {
     removeGenomePropertiesFile(viewer, "9606");
     expect(viewer.gp_taxonomy.remove_organism_loaded).toHaveBeenCalledWith(
       9606,
-      false
+      false,
     );
   });
 

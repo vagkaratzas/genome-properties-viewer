@@ -7,11 +7,11 @@ import * as d3 from "./d3";
 export const transformByScroll = (viewer) => {
   viewer.newRows.attr(
     "transform",
-    () => `translate(${viewer.current_scroll.x}, ${viewer.current_scroll.y})`
+    () => `translate(${viewer.current_scroll.x}, ${viewer.current_scroll.y})`,
   );
   viewer.newCols.attr(
     "transform",
-    `translate(${viewer.current_scroll.x}, ${viewer.current_scroll.y})`
+    `translate(${viewer.current_scroll.x}, ${viewer.current_scroll.y})`,
   );
   viewer.options.dimensions.total.short_side = viewer.options.cell_side;
   viewer.gp_taxonomy.y = viewer.options.dimensions.total.short_side;
@@ -34,7 +34,7 @@ export const drawScrollXBar = (viewer) => {
       "transform",
       `translate(${
         viewer.options.dimensions.tree.width // at the right of the tree
-      }, ${localY})`
+      }, ${localY})`,
     );
 
   viewer.scrollbar_x_bg = viewer.scrollbar_x_g
@@ -72,14 +72,14 @@ export const drawScrollXBar = (viewer) => {
 
           nextX = Math.max(
             0,
-            Math.min(nextX, available_x - selectedXBar.getAttribute("width"))
+            Math.min(nextX, available_x - selectedXBar.getAttribute("width")),
           );
 
           viewer.scrollbar_x.attr("x", nextX);
           const dx = (-nextX * propertiesWidth) / available_x;
           viewer.current_scroll.x = Math.min(0, dx);
           transformByScroll(viewer);
-        })
+        }),
     );
 };
 
@@ -96,7 +96,7 @@ const updateScrollBarX = (viewer, visible_cols, current_col) => {
   viewer.scrollbar_x_g
     .attr(
       "transform",
-      `translate(${viewer.options.dimensions.tree.width}, ${localY})`
+      `translate(${viewer.options.dimensions.tree.width}, ${localY})`,
     )
     .attr("opacity", total_cols > 0 ? 1 : 0);
 
@@ -109,7 +109,7 @@ const updateScrollBarX = (viewer, visible_cols, current_col) => {
     .attr(
       "width",
       available_x *
-        Math.min(1, total_cols !== 0 ? visible_cols / total_cols : 1)
+        Math.min(1, total_cols !== 0 ? visible_cols / total_cols : 1),
     )
     .attr("x", total_cols ? (current_col * available_x) / total_cols : 0);
   viewer.scrollbar_x_bg.attr("width", available_x);

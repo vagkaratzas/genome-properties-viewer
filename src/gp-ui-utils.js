@@ -67,7 +67,7 @@ export const drawMasks = (viewer) => {
     .style("fill", "url(#gradientright)")
     .attr(
       "x",
-      viewer.options.width - viewer.options.dimensions.total.short_side * 1.2
+      viewer.options.width - viewer.options.dimensions.total.short_side * 1.2,
     )
     .attr("y", 0)
     .attr("width", viewer.options.dimensions.total.short_side * 1.2)
@@ -82,7 +82,7 @@ export const updateMasks = (viewer) => {
     .select(".total-background")
     .attr(
       "x",
-      viewer.options.width - viewer.options.dimensions.total.short_side * 1.2
+      viewer.options.width - viewer.options.dimensions.total.short_side * 1.2,
     )
     .attr("width", viewer.options.dimensions.total.short_side * 1.2)
     .attr("height", viewer.options.height);
@@ -112,7 +112,7 @@ export const drawDragArea = (viewer) => {
           // Forces limits for the drag
           dx = Math.min(
             Math.max(-treeSpace + event.x, xLimit - treeSpace),
-            viewer.options.width - treeSpace
+            viewer.options.width - treeSpace,
           );
           g.attr("transform", `translate(${dx + treeSpace}, 0)`);
         })
@@ -123,12 +123,12 @@ export const drawDragArea = (viewer) => {
           viewer.gp_taxonomy.dispatcher.call(
             "changeWidth",
             viewer.gp_taxonomy,
-            new_width
+            new_width,
           );
           g.attr("transform", `translate(${new_width}, 0)`);
           viewer.gp_taxonomy.width = new_width;
           viewer.gp_taxonomy.update_tree();
-        })
+        }),
     );
   const side = viewer.options.cell_side / 2;
   g.append("rect")

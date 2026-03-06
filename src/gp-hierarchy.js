@@ -28,7 +28,6 @@ class GenomePropertiesHierarchy {
      * @type {Object}
      * */
     this.dispatcher = d3.dispatch("switchChanged", "hierarchyLoaded");
-    return this;
   }
 
   /**
