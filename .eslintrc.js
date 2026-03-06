@@ -8,7 +8,7 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: "module",
   },
-  ignorePatterns: ["taxonomy_retriever.js", ".*.js", "bin/*", "scripts/*", "vitest.config.js"],
+  ignorePatterns: [".*.js", "bin/*", "scripts/*", "vitest.config.js"],
   rules: {
     camelcase: ["off"],
     "no-return-assign": ["error", "except-parens"],

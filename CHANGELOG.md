@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `src/taxonomy/taxonomy_retriever.js` moved to `scripts/retrieve_taxonomy.js` to consolidate all standalone Node.js data scripts in one place. The config path inside the script is now resolved via `__dirname` (was a hardcoded `./src/taxonomy/config.json`), making it work regardless of the working directory from which `npm run create-taxonomy-file` is invoked.
+- `.gitignore`: updated ignored credentials path from `/src/taxonomy/config.json` to `scripts/config.json`.
+- `.eslintrc.js`: removed the now-redundant explicit `taxonomy_retriever.js` ignore entry — `scripts/*` already covers it.
 - Renamed misspelled identifiers throughout the source (no behaviour change):
   - `dipatcher` → `dispatcher` (property on `GenomePropertiesTaxonomy`, `GenomePropertiesHierarchy`, `GenomePropertiesController`, and callers in `gp-tax-node.js`, `gp-ui-utils.js`)
   - `spaciesRequested` → `speciesRequested` (dispatch event name)

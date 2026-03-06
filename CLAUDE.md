@@ -27,7 +27,7 @@ npm run create-taxonomy-file
 npm run create-erz-merged
 ```
 
-There are no unit tests. Linting is the only automated quality check, enforced via Husky pre-commit and pre-push hooks.
+Unit tests run with Vitest (`npm test`). Linting is enforced via Husky pre-commit and pre-push hooks.
 
 ## Architecture
 

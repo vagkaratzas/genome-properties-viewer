@@ -12,7 +12,7 @@
     "test:lint": "eslint --color \"./**/*.js\"",
     "browser-sync": "browser-sync start --server -f bin/*.*",
     "serve": "npm run watch & npm run browser-sync",
-    "create-taxonomy-file": "node src/taxonomy/taxonomy_retriever.js > taxonomy.json",
+    "create-taxonomy-file": "node scripts/retrieve_taxonomy.js > taxonomy.json",
     "prettier": "prettier --write src/*",
     "prepare": "husky install",
     "jsdoc": "jsdoc2md src/*.js > reference.md",
