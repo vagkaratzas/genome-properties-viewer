@@ -24,6 +24,17 @@ npm run test:watch
 npm run test:coverage
 ```
 
+Browser integration (end-to-end) tests are written with [Playwright](https://playwright.dev/) and live in `tests/`.
+They start a local static server automatically and run against a real Chromium browser.
+
+```bash
+# Run all smoke tests (requires a built bundle: npm run build)
+npm run test:e2e
+
+# Run with the Playwright UI explorer
+npx playwright test --ui
+```
+
 Linting (ESLint) is the only check enforced by the pre-commit hook:
 
 ```bash

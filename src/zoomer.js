@@ -120,7 +120,12 @@ class ZoomPanel {
    */
   static add_button(panel, text, x, y, r) {
     const c = panel.append("circle").attr("cx", x).attr("cy", y).attr("r", r);
-    panel.append("text").attr("x", x).attr("y", y).text(text);
+    panel
+      .append("text")
+      .attr("x", x)
+      .attr("y", y)
+      .style("pointer-events", "none")
+      .text(text);
     return c;
   }
 }

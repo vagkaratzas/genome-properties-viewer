@@ -8,7 +8,7 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: "module",
   },
-  ignorePatterns: [".*.js", "bin/*", "scripts/*", "vitest.config.js"],
+  ignorePatterns: [".*.js", "bin/*", "scripts/*", "tests/*", "vitest.config.js", "playwright.config.js"],
   rules: {
     camelcase: ["off"],
     "no-return-assign": ["error", "except-parens"],

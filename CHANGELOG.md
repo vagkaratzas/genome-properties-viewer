@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **Browser smoke tests** (Playwright): 8 end-to-end tests in `tests/smoke.spec.js` covering page load, taxonomy tree rendering and expansion, species activation, zoom in/out, and step-column expansion. A minimal static file server (`tests/serve.js`) and a test harness page (`tests/index.html`) serve the built bundle and test-data fixtures. Run with `npm run test:e2e`.
+  - `playwright.config.js`: Playwright configuration (single Chromium project, headless, local webServer on port 4321).
+  - `playwright-report/` and `test-results/` added to `.gitignore`.
 - **Unit tests** (Vitest): 123 tests across 8 test files covering pure-logic modules (node environment) and DOM-dependent modules (jsdom environment).
   - Phase 1 — node environment: `src/d3.test.js`, `src/gp-filters.test.js`, `src/gp-hierarchy.test.js`, `src/gp-uploader.test.js`
   - Phase 2 — jsdom environment: `src/modal.test.js`, `src/gp-totals.test.js`, `src/gp-scroller.test.js`, `src/gp-taxonomy.test.js`
@@ -53,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- `zoomer.js`: Zoom +/- button labels (`<text>` SVG elements) were intercepting pointer events, preventing clicks from reaching the underlying `<circle>` that held the click handler. Fixed by adding `pointer-events: none` to the text elements.
 - `gp-viewer.js`: Whitelist file was never parsed — `response.json` (property reference) corrected to `response.json()` (method call).
 - `gp-taxonomy.js`: Same `response.json` → `response.json()` fix in the unused `load_taxonomy()` method.
 - `gp-hierarchy.js`: Same `response.json` → `response.json()` fix in the unused `load_hierarchy_from_path()` method.
