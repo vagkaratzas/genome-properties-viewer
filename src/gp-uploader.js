@@ -267,9 +267,8 @@ export class FileGetter {
        `,
       );
 
-    const w = this.gaugeSVG.node().getBoundingClientRect().width;
-
     const gauges = this.gaugeSVG.selectAll("g.gauge").data(this.activeGauges);
+    const w = 100;
     const current = this.activeGauge;
 
     const gauge = gauges

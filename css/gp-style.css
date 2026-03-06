@@ -241,6 +241,10 @@ div.gp-modal-content.gp-modal-active {
 .progress-panel .gauges-panel {
   text-align: center;
 }
+.progress-panel .gauges-panel svg.gauges {
+  height: 100px;
+  max-width: 120px;
+}
 .progress-panel .requests-list {
   background: #5d5d5d;
   color: #b8ff72;
@@ -505,10 +509,6 @@ div.container .top-block .minimise.on::after {
 .autocomplete-suggestion.selected {
   background: #f0f0f0;
 }
-
-/* svg.gp-viewer:focus {
-  background: aliceblue;
-} */
 
 .step-toggler circle,
 .step-toggler path {
