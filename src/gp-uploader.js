@@ -48,7 +48,7 @@ export const loadGenomePropertiesText = (
     for (const org of objOrgs) {
       enableSpeciesFromPreLoaded(viewer, org, isFromFile);
     }
-  } catch (e) {
+  } catch {
     // eslint-disable-next-line no-console
     console.warn("File is not JSON. Trying to parse it as TSV now.");
     const wl = viewer.whitelist;
@@ -186,7 +186,6 @@ export class FileGetter {
       loaded = responseAsArrayBuffer.byteLength;
       this.files[path].progress = 1;
     } else {
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         // eslint-disable-next-line no-await-in-loop
         const { done, value } = await reader.read();
