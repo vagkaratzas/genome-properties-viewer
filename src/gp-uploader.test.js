@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   enableSpeciesFromPreLoaded,
   loadGenomePropertiesText,
   preloadSpecies,
   removeGenomePropertiesFile,
+  FileGetter,
 } from "./gp-uploader";
 
 // ────────────────────────────────────────────────────────────
@@ -361,5 +362,123 @@ describe("removeGenomePropertiesFile", () => {
     });
     removeGenomePropertiesFile(viewer, "9606");
     expect(viewer.update_viewer).toHaveBeenCalledWith(500);
+  });
+});
+
+// ────────────────────────────────────────────────────────────
+// FileGetter — getText / getJSON caching
+// ────────────────────────────────────────────────────────────
+describe("FileGetter", () => {
+  // Minimal D3-like chainable element returned by modal.getContentElement()
+  function makeChainable() {
+    const el = {};
+    el.append = vi.fn(() => el);
+    el.attr = vi.fn(() => el);
+    el.text = vi.fn(() => el);
+    return el;
+  }
+
+  function makeMockModal() {
+    return {
+      showContent: vi.fn(),
+      getContentElement: vi.fn(() => makeChainable()),
+      setVisibility: vi.fn(),
+    };
+  }
+
+  // Returns a fetch mock that serves `payload` as JSON, with no streaming body
+  // (body: null forces the arrayBuffer() fallback path in getText)
+  function makeFetchMock(payload) {
+    const buf = new TextEncoder().encode(JSON.stringify(payload)).buffer;
+    return vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => String(buf.byteLength) },
+      body: null,
+      arrayBuffer: vi.fn().mockResolvedValue(buf),
+    });
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it("getJSON returns parsed JSON on first call", async () => {
+    const payload = { GenProp0001: { property: "GenProp0001" } };
+    vi.stubGlobal("fetch", makeFetchMock(payload));
+    const getter = new FileGetter({ viewer: { modal: makeMockModal() } });
+
+    const result = await getter.getJSON("/data.json");
+
+    expect(result).toEqual(payload);
+  });
+
+  it("getJSON returns parsed JSON on a repeated call (cache hit)", async () => {
+    const payload = { GenProp0001: { property: "GenProp0001" } };
+    vi.stubGlobal("fetch", makeFetchMock(payload));
+    const getter = new FileGetter({ viewer: { modal: makeMockModal() } });
+
+    const first = await getter.getJSON("/data.json");
+    // Second call hits the cache — this was the regression: it previously
+    // returned the raw Response object instead of the parsed data.
+    const second = await getter.getJSON("/data.json");
+
+    expect(second).toEqual(payload);
+    expect(second).toBe(first);
+  });
+
+  it("fetch is called exactly once even when getJSON is called multiple times", async () => {
+    const payload = { test: true };
+    const mockFetch = makeFetchMock(payload);
+    vi.stubGlobal("fetch", mockFetch);
+    const getter = new FileGetter({ viewer: { modal: makeMockModal() } });
+
+    await getter.getJSON("/data.json");
+    await getter.getJSON("/data.json");
+    await getter.getJSON("/data.json");
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("getText returns raw text on first call", async () => {
+    const content = "hello\tworld\n";
+    const buf = new TextEncoder().encode(content).buffer;
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => String(buf.byteLength) },
+      body: null,
+      arrayBuffer: vi.fn().mockResolvedValue(buf),
+    });
+    vi.stubGlobal("fetch", mockFetch);
+    const getter = new FileGetter({ viewer: { modal: makeMockModal() } });
+
+    const result = await getter.getText("/file.tsv");
+
+    expect(result).toBe(content);
+  });
+
+  it("getText returns the same text on a repeated call (cache hit)", async () => {
+    const content = "hello\tworld\n";
+    const buf = new TextEncoder().encode(content).buffer;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        headers: { get: () => String(buf.byteLength) },
+        body: null,
+        arrayBuffer: vi.fn().mockResolvedValue(buf),
+      }),
+    );
+    const getter = new FileGetter({ viewer: { modal: makeMockModal() } });
+
+    const first = await getter.getText("/file.tsv");
+    const second = await getter.getText("/file.tsv");
+
+    expect(second).toBe(content);
+    expect(second).toBe(first);
   });
 });

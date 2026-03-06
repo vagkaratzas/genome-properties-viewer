@@ -167,7 +167,7 @@ export class FileGetter {
   }
 
   async getText(path, shouldParseAsJSON = false) {
-    if (this.files[path]) return this.files[path].request;
+    if (this.files[path]) return this.files[path].data;
     this.files[path] = {
       loading: true,
       path,
