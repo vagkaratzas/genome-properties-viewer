@@ -469,52 +469,91 @@ div.container .top-block .minimise.on::after {
   margin-bottom: 8px;
 }
 
+/*
+ * Legends layout:
+ *   <ul>  → column of rows
+ *   <li>  → flex row: [label | color swatch]
+ *
+ * Label has a fixed width so all three swatches line up vertically.
+ */
 .gp-legends ul {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   padding: 0;
   margin: 0;
 }
 
 .gp-legends ul li {
-  width: auto;
-  text-align: left;
-  padding: 0;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: 0;
+  width: auto;
+  padding: 0;
+  text-align: left;
 }
 
 .gp-legends ul label {
+  width: 50px;
+  flex-shrink: 0;
   color: var(--gpv-medium);
   text-transform: capitalize;
-  vertical-align: middle;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: right;
+  padding-right: 8px;
 }
 
+/* Color swatch — flex so inner text and ::after overlay both centre */
 .gp-legends ul div.color {
-  width: 36px;
-  height: 14px;
-  margin-left: 0;
-  display: inline-flex;
-  vertical-align: middle;
-  border-radius: 3px;
-  padding: 0;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+  width: 44px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: var(--gpv-radius);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.10);
+  cursor: pointer;
+  transition: box-shadow var(--gpv-transition), transform var(--gpv-transition);
 }
 
-/* Filter active highlight */
+.gp-legends ul div.color:hover {
+  transform: scale(1.06);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), var(--gpv-shadow-sm);
+}
+
+/* Count number inside the swatch */
+.gp-legends ul div.color > div {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Active filter: ∀ / ∃ / ∄ symbol overlays the swatch, centred */
 .color.filter {
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08), 0 0 0 2px var(--gpv-green);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.10), 0 0 0 2px var(--gpv-green);
 }
 
 .color.filter::after {
   content: attr(type);
-  position: relative;
-  right: 0;
-  font-size: 0.75em;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: var(--gpv-radius);
+  pointer-events: none;
 }
 
 /* ============================================================
@@ -665,40 +704,67 @@ div.info-tooltip {
   left: 500px;
   visibility: hidden;
   font-size: 12px;
-  min-width: 220px;
-  max-width: 340px;
+  min-width: 240px;
+  max-width: 360px;
+  overflow: hidden; /* clips header's background flush to border-radius */
 }
 
+/* Optional header injected by draw_tooltip() */
+div.info-tooltip > header {
+  display: block;
+  padding: 7px 14px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gpv-teal);
+  background: var(--gpv-teal-bg);
+  border-bottom: 1px solid var(--gpv-border-light);
+}
+
+/*
+ * Tooltip rows use a CSS table layout:
+ *   .label cell  – shrinks to fit its own content (width: 1% trick)
+ *   .content cell – fills the remaining width
+ *
+ * This handles both multi-word keys ("Property", "Organism") and
+ * single-character quantifier symbols (∀ / ∃ / ∄) from the same
+ * draw_tooltip() call without any fixed pixel column width.
+ */
 div.info-tooltip ul {
   list-style: none;
-  padding: 10px 14px;
+  display: table;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  padding: 6px 14px 10px;
   margin: 0;
 }
 
 div.info-tooltip ul > li {
-  padding-bottom: 5px;
-  overflow: hidden;
-  display: flex;
-  gap: 8px;
-}
-
-div.info-tooltip ul > li:last-child {
-  padding-bottom: 0;
+  display: table-row;
 }
 
 div.info-tooltip ul > li .label {
-  float: none;
-  font-weight: 600;
-  color: var(--gpv-medium);
+  display: table-cell;
+  width: 1%;              /* shrink-wraps to the widest label in the set */
+  white-space: nowrap;
+  padding-right: 10px;
   text-align: right;
-  flex-shrink: 0;
-  width: 38%;
-  padding-right: 0;
+  vertical-align: top;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gpv-medium);
+  padding-top: 1px;
 }
 
 div.info-tooltip ul > li .content {
-  overflow: hidden;
+  display: table-cell;
+  font-size: 12px;
   color: var(--gpv-dark);
+  line-height: 1.5;
+  vertical-align: top;
+  word-break: break-word;
 }
 
 /* ============================================================
