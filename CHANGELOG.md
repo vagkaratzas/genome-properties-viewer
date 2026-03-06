@@ -8,11 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- **Unit tests** (Vitest): 67 tests covering `src/d3.js`, `src/gp-filters.js`, `src/gp-hierarchy.js`, and `src/gp-uploader.js`. Tests live alongside source files as `src/*.test.js`.
+- **Unit tests** (Vitest): 123 tests across 8 test files covering pure-logic modules (node environment) and DOM-dependent modules (jsdom environment).
+  - Phase 1 — node environment: `src/d3.test.js`, `src/gp-filters.test.js`, `src/gp-hierarchy.test.js`, `src/gp-uploader.test.js`
+  - Phase 2 — jsdom environment: `src/modal.test.js`, `src/gp-totals.test.js`, `src/gp-scroller.test.js`, `src/gp-taxonomy.test.js`
   - `npm test` — run all tests once
   - `npm run test:watch` — watch mode
   - `npm run test:coverage` — generate a coverage report under `coverage/`
-- `vitest.config.js`: Vitest configuration (node environment, v8 coverage provider).
+- `vitest.config.js`: Vitest configuration (node environment default, v8 coverage provider). jsdom tests opt in per-file via `// @vitest-environment jsdom`.
+- `jsdom` added as a dev dependency (Vitest peer for the jsdom environment).
 - `coverage/` added to `.gitignore`.
 - `README.md`: new *Development → Testing* section documenting how to run tests and linting.
 

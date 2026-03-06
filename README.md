@@ -11,7 +11,7 @@ You can seee it in action in https://wwwdev.ebi.ac.uk/interpro/genomeproperties/
 
 ### Testing
 
-Unit tests are written with [Vitest](https://vitest.dev/) and live alongside the source files (`src/*.test.js`).
+Unit tests (including DOM-dependent tests) are written with [Vitest](https://vitest.dev/) and live alongside the source files (`src/*.test.js`).
 
 ```bash
 # Run all tests once

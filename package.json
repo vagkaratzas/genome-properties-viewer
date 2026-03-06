@@ -60,6 +60,7 @@
     "eslint-plugin-import": "^2.22.1",
     "husky": "^5.1.3",
     "jsdoc-to-markdown": "7.0.0",
+    "jsdom": "^28.1.0",
     "mysql": "2.18.1",
     "prettier": "2.2.1",
     "regenerator": "0.14.7",
