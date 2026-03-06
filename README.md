@@ -7,6 +7,29 @@ The species can be selected from a taxonomy tree displayed in the left of the sc
 
 You can seee it in action in https://wwwdev.ebi.ac.uk/interpro/genomeproperties/viewer
 
+## Development
+
+### Testing
+
+Unit tests are written with [Vitest](https://vitest.dev/) and live alongside the source files (`src/*.test.js`).
+
+```bash
+# Run all tests once
+npm test
+
+# Run in watch mode (re-runs on file changes)
+npm run test:watch
+
+# Run with a coverage report (output in coverage/)
+npm run test:coverage
+```
+
+Linting (ESLint) is the only check enforced by the pre-commit hook:
+
+```bash
+npm run test:lint
+```
+
 ## API Reference
 
 The code API reference is under construction and its current state is available in [reference.md](./reference.md)

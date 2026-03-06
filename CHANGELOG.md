@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Unit tests** (Vitest): 67 tests covering `src/d3.js`, `src/gp-filters.js`, `src/gp-hierarchy.js`, and `src/gp-uploader.js`. Tests live alongside source files as `src/*.test.js`.
+  - `npm test` — run all tests once
+  - `npm run test:watch` — watch mode
+  - `npm run test:coverage` — generate a coverage report under `coverage/`
+- `vitest.config.js`: Vitest configuration (node environment, v8 coverage provider).
+- `coverage/` added to `.gitignore`.
+- `README.md`: new *Development → Testing* section documenting how to run tests and linting.
+
 ### Removed
 
 - `gp-uploader.js`: `FileGetter` was importing `select` from d3 to set `this.base`, which was never read after construction. Removed `this.base`, the `select` import, and the now-unused `element` constructor parameter.

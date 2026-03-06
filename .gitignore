@@ -4,3 +4,4 @@ node_modules/
 .idea/
 /src/taxonomy/config.json
 taxonomy.json
+coverage/
