@@ -50,8 +50,8 @@ class GenomePropertiesHierarchy {
   }
 
   /**
-   * Defines all the atrributes by processing the JSON object
-   * @param {Object} data - Object representing the root of the Hierachy
+   * Defines all the attributes by processing the JSON object
+   * @param {Object} data - Object representing the root of the Hierarchy
    */
   load_hierarchy_from_data(data) {
     this.root = data;
@@ -69,7 +69,7 @@ class GenomePropertiesHierarchy {
   }
 
   /**
-   * Wlaks the tree, adding each node in `this.nodes` and generating a list of parents(in `node.parents`) for each node.
+   * Walks the tree, adding each node in `this.nodes` and generating a list of parents(in `node.parents`) for each node.
    * @param {Object} node - each node has the shape `{id: <String>, name: <String>, children: [<Node>]}`.
    */
   add_node_recursively(node, parent = null) {
@@ -118,7 +118,7 @@ class GenomePropertiesHierarchy {
   }
 
   /**
-   * finds the top level property with the given id,  toggles the value of `enable`, and then dispatches an event announceing the change.
+   * Finds the top level property with the given id, toggles the value of `enable`, and then dispatches an event announcing the change.
    * @param {String} id - Id of the top level genome property
    */
   toggle_switch(id) {

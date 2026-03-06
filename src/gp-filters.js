@@ -1,17 +1,21 @@
 import * as d3 from "./d3";
 
 /**
- * @summary A cell in the heatmap can have 1 of 3 values: Yes, No or partial. Indicating if there is evidence that the GP is present in a given species.
- * Given multiple species, this function filters the list of genome properties to which currentluy selected species match the given condition, For example:
+ * Filters genome properties by the quantifier applied to each cell value (YES / NO / PARTIAL).
  *
- * |Value    | Filter | JSON               | Explanation                                          |
- * |---------|--------|--------------------|------------------------------------------------------|
- * | YES     | ∀      | `{"YES": "∀"}`     | All the species have this GP                         |
- * | NO      | ∃      | `{"NO": "∃"}`      | There is at least 1 species with this GP             |
- * | PARTIAL | ∄      | `{"PARTIAL": "∄"}` | None of the species have partial evidence of this GP |
+ * A cell in the heatmap can have 1 of 3 values: YES, NO or PARTIAL, indicating whether
+ * there is evidence that the GP is present in a given species.
+ * Given multiple species, this function filters the list of genome properties to those where
+ * the currently selected species match the given quantifier condition. For example:
+ *
+ * |Value    | Filter | JSON               | Explanation                                              |
+ * |---------|--------|--------------------|----------------------------------------------------------|
+ * | YES     | ∀      | `{"YES": "∀"}`     | All selected species have this GP                        |
+ * | NO      | ∃      | `{"NO": "∃"}`      | At least 1 selected species does not have this GP        |
+ * | PARTIAL | ∄      | `{"PARTIAL": "∄"}` | None of the selected species have partial evidence of this GP |
  *
  * The current set of filters is in `viewer.legend_filters` and the filtered props will be saved in `viewer.props`.
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properties viewer
  */
 export const filterByLegend = (viewer) => {
   if (viewer.legend_filters) {
@@ -45,7 +49,7 @@ export const filterByLegend = (viewer) => {
 /**
  * Genome Properties are organised in a hierarchy. By invoking this function, the list of properties in `viewer.props` is filtered
  * by only including those whose `parent_top_properties` are included in `viewer.gp_hierarchy`
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properties viewer
  */
 export const filterByHierarchy = (viewer) => {
   viewer.props = viewer.props.filter((e) => {
@@ -58,8 +62,8 @@ export const filterByHierarchy = (viewer) => {
 };
 
 /**
- * Filters the list of properties in `viewer.props` by checnking if their name includes the text in `viewer.filter_text`
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * Filters the list of properties in `viewer.props` by checking if their name includes the text in `viewer.filter_text`
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properties viewer
  */
 export const filterByText = (viewer) => {
   if (viewer.filter_text) {

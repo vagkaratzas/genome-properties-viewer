@@ -1,8 +1,8 @@
 import * as d3 from "./d3";
 /**
  * Appends a `defs` element in the main group of the viewer.
- * It contains the definitions of the gradients used in th masks around the heatmap
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * It contains the definitions of the gradients used in the masks around the heatmap
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const createGradient = (viewer) => {
   const defs = viewer.mainGroup.append("defs");
@@ -49,7 +49,7 @@ export const createGradient = (viewer) => {
 /**
  * Appends a new group element into the mainGroup of the viewer.
  * The group contains masks as rectangles to give the effect of new GP fading-in/out while horizontal scrolling
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const drawMasks = (viewer) => {
   viewer.masks = viewer.mainGroup.append("g").attr("class", "masks");
@@ -75,7 +75,7 @@ export const drawMasks = (viewer) => {
 };
 /**
  * Update the size and position of the masks
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const updateMasks = (viewer) => {
   viewer.masks
@@ -94,8 +94,8 @@ export const updateMasks = (viewer) => {
 };
 
 /**
- * Draws a draggable area ||| to redifine the widthassigned to the tree.
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * Draws a draggable area ||| to redefine the width assigned to the tree.
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const drawDragArea = (viewer) => {
   const xLimit = 90;

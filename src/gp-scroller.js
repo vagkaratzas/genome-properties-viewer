@@ -1,8 +1,8 @@
 import * as d3 from "./d3";
 /**
- * Updates this and othe components as if a scroll event happened.
- * It became the de-facto refresh of the whole viewer, as it groups the minimum necesary changes to trigger a full update.
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * Updates this and other components as if a scroll event happened.
+ * It became the de-facto refresh of the whole viewer, as it groups the minimum necessary changes to trigger a full update.
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const transformByScroll = (viewer) => {
   viewer.newRows.attr(
@@ -20,8 +20,8 @@ export const transformByScroll = (viewer) => {
 
 /**
  * Append a group into the viewer's mainGroup.
- * It contains the elements to draw a simple horizontal srollbar, and attach the dragging events to them.
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * It contains the elements to draw a simple horizontal scrollbar, and attach the dragging events to them.
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const drawScrollXBar = (viewer) => {
   const localY = (1 + viewer.organisms.length) * viewer.options.cell_side;
@@ -86,8 +86,8 @@ export const drawScrollXBar = (viewer) => {
 /**
  * Updates the size and position of the scrollbar.
  * The size of the draggable is proportional to the number of visible columns in the graphic
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
- * @param {Number} visible_cols - Indicates how many columns are visible in the area assgined to the heatmap.
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
+ * @param {Number} visible_cols - Indicates how many columns are visible in the area assigned to the heatmap.
  * @param {Number} current_col - Indicates the index of the first visible column out of the total number of GP.
  */
 const updateScrollBarX = (viewer, visible_cols, current_col) => {
@@ -117,8 +117,8 @@ const updateScrollBarX = (viewer, visible_cols, current_col) => {
 
 /**
  * A single method to trigger the update of all the scroll bars of the viewer. We currently only use 1.
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
- * @param {Number} visible_cols - Indicates how many columns are visible in the area assgined to the heatmap.
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
+ * @param {Number} visible_cols - Indicates how many columns are visible in the area assigned to the heatmap.
  * @param {Number} current_col - Indicates the index of the first visible column out of the total number of GP.
  */
 export const updateScrollBars = (viewer, visible_cols, current_col) => {

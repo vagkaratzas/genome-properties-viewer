@@ -156,12 +156,12 @@ export default class GenomePropertiesController {
         this.draw_tooltip(
           event,
           {
-            "∀": `All the species in the row have the value (${d.key})`,
-            "∃": `There is at least one species in each row with the value (${d.key})`,
-            "∄": `There is not a single species in each row with the value (${d.key})`,
+            "∀": `Show only genome properties where all selected species have the value (${d.key})`,
+            "∃": `Show only genome properties where at least one species has the value (${d.key})`,
+            "∄": `Show only genome properties where no species has the value (${d.key})`,
           },
           false,
-          "Click in this area to apply one of the following filters",
+          "Click to cycle through filters for this value",
         ),
       )
       .on("mouseout", () => this.draw_tooltip())
@@ -220,7 +220,7 @@ export default class GenomePropertiesController {
       this.hierarchy_controller.dispatcher.call(
         "switchChanged",
         this,
-        this.hierarchy_switch,
+        this.hierarchy_controller.hierarchy_switch,
       );
       this.gp_component.select(".current_status").html(d.toLowerCase());
     } else {
