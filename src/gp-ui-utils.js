@@ -99,22 +99,26 @@ export const updateMasks = (viewer) => {
  */
 export const drawDragArea = (viewer) => {
   const xLimit = 90;
+  const dragOffset = 10;
   let dx = 0;
   const g = viewer.mainGroup
     .append("g")
     .attr("class", "height-dragger")
-    .attr("transform", `translate(${viewer.options.dimensions.tree.width}, 0)`)
+    .attr(
+      "transform",
+      `translate(${viewer.options.dimensions.tree.width + dragOffset}, 0)`,
+    )
     .call(
       d3
         .drag()
         .on("drag", (event) => {
           const treeSpace = viewer.options.dimensions.tree.width;
-          // Forces limits for the drag
+          // Forces limits for the drag; subtract dragOffset so tree width is unaffected by the visual offset
           dx = Math.min(
-            Math.max(-treeSpace + event.x, xLimit - treeSpace),
+            Math.max(-treeSpace + event.x - dragOffset, xLimit - treeSpace),
             viewer.options.width - treeSpace,
           );
-          g.attr("transform", `translate(${dx + treeSpace}, 0)`);
+          g.attr("transform", `translate(${dx + treeSpace + dragOffset}, 0)`);
         })
         .on("end", () => {
           const treeSpace = viewer.options.dimensions.tree.width;
@@ -125,7 +129,7 @@ export const drawDragArea = (viewer) => {
             viewer.gp_taxonomy,
             new_width,
           );
-          g.attr("transform", `translate(${new_width}, 0)`);
+          g.attr("transform", `translate(${new_width + dragOffset}, 0)`);
           viewer.gp_taxonomy.width = new_width;
           viewer.gp_taxonomy.update_tree();
         }),

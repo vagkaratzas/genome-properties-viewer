@@ -5,13 +5,14 @@ import * as d3 from "./d3";
  * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const transformByScroll = (viewer) => {
+  const heatmap_x_offset = viewer.options.dimensions.heatmap_x_offset || 0;
   viewer.newRows.attr(
     "transform",
     () => `translate(${viewer.current_scroll.x}, ${viewer.current_scroll.y})`,
   );
   viewer.newCols.attr(
     "transform",
-    `translate(${viewer.current_scroll.x}, ${viewer.current_scroll.y})`,
+    `translate(${viewer.current_scroll.x + heatmap_x_offset}, ${viewer.current_scroll.y})`,
   );
   viewer.options.dimensions.total.short_side = viewer.options.cell_side;
   viewer.gp_taxonomy.y = viewer.options.dimensions.total.short_side;

@@ -776,25 +776,39 @@ g.node.loaded text.label-species {
    13. TREE RESIZER (width divider)
    ============================================================ */
 
+/*
+ * The height-sizer line runs the full viewer height and is centered on the
+ * tree/heatmap boundary.  A wide white stroke (matching the SVG surface
+ * colour) paints over the few pixels of content on each side, creating
+ * visible breathing room without changing any JS positions.
+ * On hover the strip turns teal to signal it is draggable.
+ */
 .height-sizer {
-  stroke-width: 3px;
+  stroke: var(--gpv-surface);
+  stroke-width: 5px;
   opacity: 0;
   pointer-events: none;
 }
 
 .height-dragger {
   cursor: ew-resize;
-  opacity: 0.6;
   transition: opacity var(--gpv-transition);
-}
-
-.height-dragger:hover {
-  opacity: 1;
 }
 
 .height-dragger:hover .height-sizer {
   stroke: var(--gpv-teal-light);
-  opacity: 0.8;
+  stroke-width: 10px;
+  opacity: 0.55;
+}
+
+/* The small ||| handle lines stay subtle until hover */
+.height-dragger line:not(.height-sizer) {
+  opacity: 0.35;
+  transition: opacity var(--gpv-transition);
+}
+
+.height-dragger:hover line:not(.height-sizer) {
+  opacity: 1;
 }
 
 /* ============================================================

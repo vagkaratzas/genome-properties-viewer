@@ -140,12 +140,16 @@ export default class GenomePropertiesViewer {
         });
     }
 
+    this.options.dimensions.heatmap_x_offset = 20;
+
     this._createSVG();
     this._initTaxonomy();
     this._initHierarchy();
     this._initControls();
     this._drawLayout();
-    window.addEventListener("resize", () => this.refresh_size());
+    new ResizeObserver(() => this.refresh_size()).observe(
+      d3.select(element_selector).node(),
+    );
   }
 
   _createSVG() {
@@ -336,6 +340,21 @@ export default class GenomePropertiesViewer {
       .attr("width", rect.width);
     this.x.range([0, this.options.cell_side]);
 
+    // Clamp horizontal scroll so columns never scroll entirely off-screen
+    // after a resize (e.g. window narrowed or scrollbar appeared).
+    if (this.props && this.props.length) {
+      const tw = this.props.length * this.options.cell_side;
+      const minX =
+        -tw +
+        rect.width -
+        this.options.dimensions.tree.width -
+        this.options.cell_side;
+      this.current_scroll.x = Math.max(
+        minX,
+        Math.min(0, this.current_scroll.x),
+      );
+    }
+
     this.update_viewer();
   }
 
@@ -405,7 +424,11 @@ export default class GenomePropertiesViewer {
   draw_columns_panel() {
     this.newCols = this.mainGroup
       .append("g")
-      .attr("class", "gpv-new-cols-group");
+      .attr("class", "gpv-new-cols-group")
+      .attr(
+        "transform",
+        `translate(${this.options.dimensions.heatmap_x_offset}, 0)`,
+      );
   }
 
   move_row(prop, delta) {
