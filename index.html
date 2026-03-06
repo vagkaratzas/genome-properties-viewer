@@ -39,7 +39,12 @@
                             <option value="both">Both</option>
                         </select>
                     </li>
-                    <li><button id="toggle-tree">Hide Taxonomy</button></li>
+                    <li>
+                        <div id="toggle-tree-container">
+                            <label><input type="radio" name="tree-visibility" value="show" checked> Show</label>
+                            <label><input type="radio" name="tree-visibility" value="hide"> Hide</label>
+                        </div>
+                    </li>
                 </ul>
             </div>
             <div id="erz-panel" style="display:none">
@@ -157,11 +162,8 @@
         }
     });
 
-    let showTaxonomy = true;
-    d3.select("#toggle-tree").on("click",(event, d)=>{
-        d3.select(event.currentTarget).text(showTaxonomy ? "Show Taxonomy" : "Hide Taxonomy");
-        showTaxonomy = !showTaxonomy;
-        viewer.gp_taxonomy.show_tree = showTaxonomy;
+    d3.selectAll('input[name="tree-visibility"]').on("change", function() {
+        viewer.gp_taxonomy.show_tree = this.value === "show";
         viewer.update_viewer();
     });
 
