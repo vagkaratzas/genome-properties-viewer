@@ -1248,3 +1248,99 @@ div.container > div#gp-viewer {
     width: 100%;
   }
 }
+
+/* ============================================================
+   28. DARK MODE TOKENS
+   Applies when:
+     (a) the OS prefers dark AND the user hasn't overridden to light
+     (b) the user has explicitly chosen dark via [data-theme="dark"]
+   ============================================================ */
+
+/* --- shared override block (DRY via custom property re-declarations) --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --gpv-bg:             #0e1419;
+    --gpv-surface:        #19232d;
+    --gpv-surface-alt:    #1f2d38;
+    --gpv-dark:           #dce4ea;
+    --gpv-medium:         #8fa4b0;
+    --gpv-muted:          #6b8290;
+    --gpv-border:         #2c3d4c;
+    --gpv-border-light:   #243240;
+    --gpv-green-bg:       #0c2217;
+    --gpv-teal-bg:        #0a1e20;
+    --gpv-no:             #3d4f5b;
+    --gpv-shadow-sm:      0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.22);
+    --gpv-shadow:         0 2px 8px rgba(0,0,0,0.40), 0 1px 3px rgba(0,0,0,0.28);
+    --gpv-shadow-lg:      0 8px 24px rgba(0,0,0,0.48), 0 2px 8px rgba(0,0,0,0.32);
+  }
+}
+
+[data-theme="dark"] {
+  --gpv-bg:             #0e1419;
+  --gpv-surface:        #19232d;
+  --gpv-surface-alt:    #1f2d38;
+  --gpv-dark:           #dce4ea;
+  --gpv-medium:         #8fa4b0;
+  --gpv-muted:          #6b8290;
+  --gpv-border:         #2c3d4c;
+  --gpv-border-light:   #243240;
+  --gpv-green-bg:       #0c2217;
+  --gpv-teal-bg:        #0a1e20;
+  --gpv-no:             #3d4f5b;
+  --gpv-shadow-sm:      0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.22);
+  --gpv-shadow:         0 2px 8px rgba(0,0,0,0.40), 0 1px 3px rgba(0,0,0,0.28);
+  --gpv-shadow-lg:      0 8px 24px rgba(0,0,0,0.48), 0 2px 8px rgba(0,0,0,0.32);
+}
+
+/* Override the SVG gradient stop colours so the fade masks match the dark
+   surface.  D3 sets stop-color as a presentation attribute; CSS overrides it. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) stop {
+    stop-color: #19232d;
+  }
+}
+
+[data-theme="dark"] stop {
+  stop-color: var(--gpv-surface);
+}
+
+/* gp-style.css sets `text-shadow: 0 0 3px white` on card headers and SVG
+   text elements.  The SVG rule is already cleared in section 10 above.
+   The HTML header rule must be explicitly cancelled in dark mode. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) header {
+    text-shadow: none;
+  }
+}
+
+[data-theme="dark"] header {
+  text-shadow: none;
+}
+
+/* ============================================================
+   29. THEME TOGGLE BUTTON
+   ============================================================ */
+
+#theme-toggle {
+  position: absolute;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--gpv-transition);
+  flex-shrink: 0;
+}
+
+#theme-toggle:hover {
+  background: rgba(255,255,255,0.30);
+}

@@ -28,7 +28,7 @@ const displayStepsModal = (viewer, gp) => {
                 ${organisms
                   .map(
                     (o) => `
-                    <td class="gp-${gp.values[o]}">
+                    <td>
                         <div class="step-popup ${
                           step.values[o] ? "passed" : "failed"
                         }" />

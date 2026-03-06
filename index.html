@@ -8,10 +8,17 @@
     <link rel="icon" href="favicon.ico" sizes="any">
     <link type="text/css" href="css/gp-style.css" rel="stylesheet"/>
     <link type="text/css" href="css/mgnify-theme.css" rel="stylesheet"/>
+    <script>
+        // Apply saved theme before first paint to avoid flash of wrong theme.
+        (function () {
+            var saved = localStorage.getItem('gpv-theme');
+            if (saved) document.documentElement.dataset.theme = saved;
+        }());
+    </script>
 </head>
 <body>
 <div class="container">
-    <h1>Genome Properties Viewer</h1>
+    <h1>Genome Properties Viewer<button id="theme-toggle" title="Toggle dark/light mode">☾</button></h1>
     <div class="top-block">
         <div id="gp-controllers" class="top-controllers">
             <div id="mode-selector">
@@ -175,7 +182,32 @@
         for (let i=0; i < oFiles.length; i++){
             gpv.uploadLocalGPFile(viewer,oFiles[i] )
         }
-
     }
+
+    // ---- Theme toggle ----
+    (function () {
+        var btn = document.getElementById('theme-toggle');
+
+        function effectiveDark() {
+            var t = document.documentElement.dataset.theme;
+            if (t === 'dark') return true;
+            if (t === 'light') return false;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+
+        function syncButton() {
+            btn.textContent = effectiveDark() ? '\u2600' : '\u263E'; // ☀ : ☾
+            btn.title = effectiveDark() ? 'Switch to light mode' : 'Switch to dark mode';
+        }
+
+        btn.addEventListener('click', function () {
+            var next = effectiveDark() ? 'light' : 'dark';
+            document.documentElement.dataset.theme = next;
+            localStorage.setItem('gpv-theme', next);
+            syncButton();
+        });
+
+        syncButton();
+    }());
 </script>
 </body>
