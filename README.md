@@ -41,6 +41,23 @@ Linting (ESLint) is the only check enforced by the pre-commit hook:
 npm run test:lint
 ```
 
+### Security
+
+```bash
+# Report known vulnerabilities in installed packages
+npm audit
+
+# Automatically apply safe (non-breaking) fixes
+npm audit fix
+
+# Check for outdated packages (Current / Wanted / Latest columns)
+npm outdated
+```
+
+> **Note:** 3 high-severity advisories currently remain in `browser-sync`'s `immutable`
+> transitive dependency. The suggested fix would downgrade browser-sync to v1.9.2 (far
+> worse). They are accepted as browser-sync is a local-only dev server, never deployed.
+
 ## API Reference
 
 The code API reference is under construction and its current state is available in [reference.md](./reference.md)
