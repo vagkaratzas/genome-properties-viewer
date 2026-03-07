@@ -49,6 +49,7 @@ export default class GenomePropertiesController {
         if (this.text_filter !== this.gp_viewer.filter_text) {
           this.gp_viewer.filter_text = this.text_filter;
           this.moveScrollUp();
+          this.gp_viewer.update_viewer();
         }
       });
     }
