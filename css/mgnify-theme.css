@@ -818,6 +818,7 @@ div.info-tooltip {
   border-left: 3px solid var(--gpv-green);
   border-radius: var(--gpv-radius-lg);
   background: var(--gpv-surface);
+  opacity: 1;
   box-shadow: var(--gpv-shadow-lg);
   /* visibility is toggled by JS; do not override opacity here */
   top: 300px;
@@ -1313,6 +1314,16 @@ div.container > div#gp-viewer {
 
 [data-theme="dark"] header {
   text-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) div.info-tooltip ul > li .content {
+    color: var(--gpv-surface);
+  }
+}
+
+[data-theme="dark"] div.info-tooltip ul > li .content {
+  color: var(--gpv-surface);
 }
 
 /* ============================================================
