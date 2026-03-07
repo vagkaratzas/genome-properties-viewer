@@ -9,6 +9,8 @@
  * Load AFTER css/gp-style.css so these declarations take precedence.
  */
 
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
+
 /* ============================================================
    1. DESIGN TOKENS
    ============================================================ */
@@ -61,14 +63,7 @@
 }
 
 /* ============================================================
-   2. GOOGLE FONT IMPORT (Inter)
-   Falls back to system stack without network — safe to include.
-   ============================================================ */
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
-
-/* ============================================================
-   3. PAGE BASE
+   2. PAGE BASE
    ============================================================ */
 
 html {
@@ -94,7 +89,7 @@ body {
 }
 
 /* ============================================================
-   4. PAGE LAYOUT
+   3. PAGE LAYOUT
    ============================================================ */
 
 div.container {
@@ -126,7 +121,7 @@ div.container > h1 {
 
 
 /* ============================================================
-   5. CONTROL PANEL (top-block)
+   4. CONTROL PANEL (top-block)
    ============================================================ */
 
 div.container .top-block {
@@ -231,7 +226,7 @@ div.container .top-block {
 }
 
 /* ============================================================
-   6. FORM CONTROLS
+   5. FORM CONTROLS
    ============================================================ */
 
 .top-controllers input[type="text"],
@@ -448,7 +443,7 @@ div.container .top-block .minimise.on::after {
 }
 
 /* ============================================================
-   7. HIERARCHY / GP SELECTOR DROPDOWN
+   6. HIERARCHY / GP SELECTOR DROPDOWN
    ============================================================ */
 
 .selector {
@@ -545,7 +540,7 @@ div.container .top-block .minimise.on::after {
 }
 
 /* ============================================================
-   8. LEGENDS PANEL
+   7. LEGENDS PANEL
    ============================================================ */
 
 .gp-legends {
@@ -652,7 +647,7 @@ div.container .top-block .minimise.on::after {
 }
 
 /* ============================================================
-   9. GP VALUE COLORS  (override css/gp-style.css)
+   8. GP VALUE COLORS  (override css/gp-style.css)
    ============================================================ */
 
 .gp-YES {
@@ -668,7 +663,7 @@ div.container .top-block .minimise.on::after {
 }
 
 /* ============================================================
-   10. SVG GLOBAL TEXT
+   9. SVG GLOBAL TEXT
    ============================================================ */
 
 text {
@@ -693,7 +688,7 @@ text.active,
 }
 
 /* ============================================================
-   11. HEATMAP CELL
+   10. HEATMAP CELL
    ============================================================ */
 
 .cell:hover {
@@ -702,7 +697,7 @@ text.active,
 }
 
 /* ============================================================
-   12. TAXONOMY TREE
+   11. TAXONOMY TREE
    ============================================================ */
 
 .node circle {
@@ -773,7 +768,7 @@ g.node.loaded text.label-species {
 }
 
 /* ============================================================
-   13. TREE RESIZER (width divider)
+   12. TREE RESIZER (width divider)
    ============================================================ */
 
 /*
@@ -812,7 +807,7 @@ g.node.loaded text.label-species {
 }
 
 /* ============================================================
-   14. TOOLTIP
+   13. TOOLTIP
    ============================================================ */
 
 div.info-tooltip {
@@ -891,7 +886,7 @@ div.info-tooltip ul > li .content {
 }
 
 /* ============================================================
-   15. MODAL
+   14. MODAL
    ============================================================ */
 
 .gp-modal {
@@ -941,7 +936,7 @@ div.gp-modal-content.gp-modal-active {
 }
 
 /* ============================================================
-   16. PROGRESS / UPLOAD PANEL
+   15. PROGRESS / UPLOAD PANEL
    ============================================================ */
 
 .progress-panel {
@@ -1006,7 +1001,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   17. STEP POPUP (per-step details squares)
+   16. STEP POPUP (per-step details squares)
    ============================================================ */
 
 .step-popup {
@@ -1027,7 +1022,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   18. STEP DETAILS BUTTON (expand/collapse columns)
+   17. STEP DETAILS BUTTON (expand/collapse columns)
    ============================================================ */
 
 .step-details-button,
@@ -1046,7 +1041,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   19. SCROLLBAR (SVG)
+   18. SCROLLBAR (SVG)
    ============================================================ */
 
 .gpv-scrollbar rect.gpv-scrollbar-bg {
@@ -1066,7 +1061,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   20. ZOOMER & SORTER (SVG controls)
+   19. ZOOMER & SORTER (SVG controls)
    ============================================================ */
 
 .gpv-zoomer circle,
@@ -1106,7 +1101,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   21. LEGEND VALUE (SVG)
+   20. LEGEND VALUE (SVG)
    ============================================================ */
 
 .legend_value {
@@ -1116,7 +1111,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   22. STEP TOGGLER (expand individual GP steps)
+   21. STEP TOGGLER (expand individual GP steps)
    ============================================================ */
 
 .step-toggler circle,
@@ -1137,7 +1132,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   23. AUTOCOMPLETE DROPDOWN
+   22. AUTOCOMPLETE DROPDOWN
    ============================================================ */
 
 .autocomplete-suggestions {
@@ -1179,7 +1174,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   24. LOADING ANIMATION
+   23. LOADING ANIMATION
    ============================================================ */
 
 .loading {
@@ -1196,7 +1191,7 @@ circle.gauge-val {
 }
 
 /* ============================================================
-   25. VIEWER AREA
+   24. VIEWER AREA
    ============================================================ */
 
 div.container > div#gp-viewer {
@@ -1207,7 +1202,7 @@ div.container > div#gp-viewer {
 }
 
 /* ============================================================
-   26. SCROLLBAR (native browser, for overflow areas)
+   25. SCROLLBAR (native browser, for overflow areas)
    ============================================================ */
 
 ::-webkit-scrollbar {
@@ -1229,7 +1224,7 @@ div.container > div#gp-viewer {
 }
 
 /* ============================================================
-   27. RESPONSIVE ADJUSTMENTS
+   26. RESPONSIVE ADJUSTMENTS
    ============================================================ */
 
 @media (max-width: 800px) {
@@ -1250,7 +1245,7 @@ div.container > div#gp-viewer {
 }
 
 /* ============================================================
-   28. DARK MODE TOKENS
+   27. DARK MODE TOKENS
    Applies when:
      (a) the OS prefers dark AND the user hasn't overridden to light
      (b) the user has explicitly chosen dark via [data-theme="dark"]
@@ -1319,7 +1314,7 @@ div.container > div#gp-viewer {
 }
 
 /* ============================================================
-   29. THEME TOGGLE BUTTON
+   28. THEME TOGGLE BUTTON
    ============================================================ */
 
 #theme-toggle {
