@@ -334,6 +334,7 @@ export default class GenomePropertiesViewer {
       .select(this.options.element_selector)
       .node()
       .getBoundingClientRect();
+    if (!rect.width) return;
     this.options.width = rect.width;
     d3.select(this.options.element_selector)
       .select("svg")
