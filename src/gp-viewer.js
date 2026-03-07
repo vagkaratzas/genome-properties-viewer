@@ -621,7 +621,7 @@ export default class GenomePropertiesViewer {
       .selectAll(".top_level_gp")
       .data(gp.parent_top_properties, (d) => d);
     const textNode = this.svg.select("text").node();
-    const text_height = textNode ? textNode.getBBox().height : 14;
+    const text_height = (textNode && textNode.getBBox().height) || 14;
     let radius = (side - text_height) / 2 - 4;
     if (radius < 2) radius = 2;
     if (radius > 6) radius = 6;
