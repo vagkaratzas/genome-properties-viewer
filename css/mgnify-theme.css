@@ -219,7 +219,8 @@ div.container .top-block {
   gap: 7px;
 }
 
-.top-controllers > div ul li label {
+.top-controllers > div ul li label,
+.top-controllers > div ul li span {
   font-size: 11px;
   color: var(--gpv-medium);
   display: inline;
@@ -585,7 +586,8 @@ div.container .top-block .minimise.on::after {
   text-align: left;
 }
 
-.gp-legends ul label {
+.gp-legends ul label,
+.gp-legends ul .legend-label {
   width: 50px;
   flex-shrink: 0;
   color: var(--gpv-medium);

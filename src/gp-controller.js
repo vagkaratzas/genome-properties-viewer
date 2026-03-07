@@ -129,7 +129,10 @@ export default class GenomePropertiesController {
 
     const li_e = legend_item.enter().append("li");
 
-    li_e.append("label").text((d) => d.key.toLowerCase());
+    li_e
+      .append("span")
+      .attr("class", "legend-label")
+      .text((d) => d.key.toLowerCase());
     li_e
       .append("div")
       .attr("class", "color")

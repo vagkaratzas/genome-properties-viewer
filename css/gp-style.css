@@ -172,7 +172,8 @@ input[type="file"] {
   text-align: right;
   padding: 1px;
 }
-.gp-legends ul label {
+.gp-legends ul label,
+.gp-legends ul .legend-label {
   color: gray;
   text-transform: capitalize;
   vertical-align: super;
@@ -386,7 +387,8 @@ div.container > div {
   list-style-type: none;
   padding: 0 10px 0 20px;
 }
-.top-controllers > div ul li label {
+.top-controllers > div ul li label,
+.top-controllers > div ul li span {
   color: gray;
   display: inline;
 }
