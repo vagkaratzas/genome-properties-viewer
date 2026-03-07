@@ -589,6 +589,7 @@ export default class GenomePropertiesViewer {
       .append("line")
       .attr("x2", this.props.length * this.options.cell_side);
 
+    this.newRows.attr("visibility", this.props.length ? null : "hidden");
     updateTotalPerOrganismPanel(this);
     updateMasks(this);
     this.sorter.y = 0;
