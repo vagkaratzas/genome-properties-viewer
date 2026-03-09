@@ -53,7 +53,7 @@ export const filterByLegend = (viewer) => {
  */
 export const filterByHierarchy = (viewer) => {
   viewer.props = viewer.props.filter((e) => {
-    if (e.parent_top_properties === null) return true;
+    if (!e.parent_top_properties) return true;
     for (const p of e.parent_top_properties)
       for (const tp of viewer.gp_hierarchy.hierarchy_switch)
         if (p === tp.id && tp.enable) return true;

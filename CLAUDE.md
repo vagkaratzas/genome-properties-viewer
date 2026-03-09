@@ -23,7 +23,11 @@ npm run jsdoc
 # Regenerate taxonomy.json from the database
 npm run create-taxonomy-file
 
-# Create the MERGED_JSON file for ERZ inputs (ERZ_MERGED.json) # TODO add steps properly
+# Extract per-step pass/fail from *.micro SQLite DBs → ERZ_STEPS.json
+npm run create-erz-steps
+
+# Create the MERGED_JSON file for ERZ inputs (ERZ_MERGED.json)
+# Reads ERZ_STEPS.json if present for real step-level data; falls back to property-level
 npm run create-erz-merged
 ```
 
