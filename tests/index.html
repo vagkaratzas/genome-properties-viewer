@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Genome Properties Viewer — Test Harness</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; }
+      #controls { padding: 8px; display: flex; gap: 8px; flex-shrink: 0; }
+      #viewer { flex: 1; min-height: 0; }
+      .gp-modal { display: none; }
+      .gp-modal-active { display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <input id="gp-filter" type="text" placeholder="Filter properties…" />
+      <select id="gp_label"><option value="name">Name</option><option value="id">ID</option></select>
+      <select id="tax_label"><option value="name">Name</option><option value="taxid">Taxid</option></select>
+      <input id="tax-search" type="text" placeholder="Search species…" />
+      <div id="gp-selector"></div>
+      <div class="gp-legends"></div>
+      <span id="info_organism"></span>
+    </div>
+    <div id="viewer"></div>
+
+    <script src="/bin/d3.custom.min.js"></script>
+    <script>
+      window.__viewer = new gpv.GenomePropertiesViewer({
+        element_selector: "#viewer",
+        hierarchy_path: "/test-files/hierarchy.json",
+        model_species_path: "/test-files/JSON_MERGED",
+        server_tax: "/test-files/tree.json",
+        width: 1200,
+        height: 600,
+      });
+    </script>
+  </body>
+</html>

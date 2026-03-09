@@ -5,7 +5,7 @@ import * as d3 from "./d3";
  */
 class ZoomPanel {
   /**
-   * Sets all the passed options in class atributes and initiates a d3.scale for the slider.
+   * Sets all the passed options in class attributes and initiates a d3.scale for the slider.
    * @param {Object} options - All the available options of this class:
    * @example <caption>Options defaults and explanations.</caption>
    * ```javascript
@@ -62,8 +62,7 @@ class ZoomPanel {
 
   /**
    * Appends a group in the given container that includes the SVG elements to represent the zoomer.
-   * It also sets the events binding them to the callback funtions passed in the options object.
-   * @summary If the description is long, write your summary here. Otherwise, feel free to remove this.
+   * It also sets the events binding them to the callback functions passed in the options object.
    */
   draw_panel() {
     this.zoom_panel = this.container
@@ -75,7 +74,7 @@ class ZoomPanel {
       "+",
       this.centerX,
       this.top,
-      this.r
+      this.r,
     ).on("click", this.function_plus);
     this.zoom_panel
       .append("line")
@@ -99,7 +98,7 @@ class ZoomPanel {
       "-",
       this.centerX,
       this.top + 2 * this.r + 2 * this.padding + this.scrollH,
-      this.r
+      this.r,
     ).on("click", this.function_less);
   }
 
@@ -120,7 +119,12 @@ class ZoomPanel {
    */
   static add_button(panel, text, x, y, r) {
     const c = panel.append("circle").attr("cx", x).attr("cy", y).attr("r", r);
-    panel.append("text").attr("x", x).attr("y", y).text(text);
+    panel
+      .append("text")
+      .attr("x", x)
+      .attr("y", y)
+      .style("pointer-events", "none")
+      .text(text);
     return c;
   }
 }

@@ -6,7 +6,7 @@
 This Class manages the file that defines that hierarchy and uses is to allow filtering over the heatmap</p>
 </dd>
 <dt><a href="#GPModal">GPModal</a></dt>
-<dd><p>Manager for a modla dialog, that has an overlay grey area and a dialog box in the middle</p>
+<dd><p>Manager for a modal dialog, that has an overlay grey area and a dialog box in the middle</p>
 </dd>
 <dt><a href="#ZoomPanel">ZoomPanel</a></dt>
 <dd><p>Creates a panel with a slider and +/- buttons to allow resizing the view</p>
@@ -17,28 +17,62 @@ This Class manages the file that defines that hierarchy and uses is to allow fil
 
 <dl>
 <dt><a href="#filterByLegend">filterByLegend</a></dt>
-<dd></dd>
+<dd><p>Filters genome properties by the quantifier applied to each cell value (YES / NO / PARTIAL).</p>
+<p>A cell in the heatmap can have 1 of 3 values: YES, NO or PARTIAL, indicating whether
+there is evidence that the GP is present in a given species.
+Given multiple species, this function filters the list of genome properties to those where
+the currently selected species match the given quantifier condition. For example:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Filter</th>
+<th>JSON</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>YES</td>
+<td>∀</td>
+<td><code>{&quot;YES&quot;: &quot;∀&quot;}</code></td>
+<td>All selected species have this GP</td>
+</tr>
+<tr>
+<td>NO</td>
+<td>∃</td>
+<td><code>{&quot;NO&quot;: &quot;∃&quot;}</code></td>
+<td>At least 1 selected species does not have this GP</td>
+</tr>
+<tr>
+<td>PARTIAL</td>
+<td>∄</td>
+<td><code>{&quot;PARTIAL&quot;: &quot;∄&quot;}</code></td>
+<td>None of the selected species have partial evidence of this GP</td>
+</tr>
+</tbody></table>
+<p>The current set of filters is in <code>viewer.legend_filters</code> and the filtered props will be saved in <code>viewer.props</code>.</p>
+</dd>
 <dt><a href="#filterByHierarchy">filterByHierarchy</a></dt>
 <dd><p>Genome Properties are organised in a hierarchy. By invoking this function, the list of properties in <code>viewer.props</code> is filtered
 by only including those whose <code>parent_top_properties</code> are included in <code>viewer.gp_hierarchy</code></p>
 </dd>
 <dt><a href="#filterByText">filterByText</a></dt>
-<dd><p>Filters the list of properties in <code>viewer.props</code> by checnking if their name includes the text in <code>viewer.filter_text</code></p>
+<dd><p>Filters the list of properties in <code>viewer.props</code> by checking if their name includes the text in <code>viewer.filter_text</code></p>
 </dd>
 <dt><a href="#transformByScroll">transformByScroll</a></dt>
-<dd><p>Updates this and othe components as if a scroll event happened.
-It became the de-facto refresh of the whole viewer, as it groups the minimum necesary changes to trigger a full update.</p>
+<dd><p>Updates this and other components as if a scroll event happened.
+It became the de-facto refresh of the whole viewer, as it groups the minimum necessary changes to trigger a full update.</p>
 </dd>
 <dt><a href="#drawScrollXBar">drawScrollXBar</a></dt>
 <dd><p>Append a group into the viewer&#39;s mainGroup.
-It contains the elements to draw a simple horizontal srollbar, and attach the dragging events to them.</p>
+It contains the elements to draw a simple horizontal scrollbar, and attach the dragging events to them.</p>
 </dd>
 <dt><a href="#updateScrollBars">updateScrollBars</a></dt>
 <dd><p>A single method to trigger the update of all the scroll bars of the viewer. We currently only use 1.</p>
 </dd>
 <dt><a href="#createGradient">createGradient</a></dt>
 <dd><p>Appends a <code>defs</code> element in the main group of the viewer.
-It contains the definitions of the gradients used in th masks around the heatmap</p>
+It contains the definitions of the gradients used in the masks around the heatmap</p>
 </dd>
 <dt><a href="#drawMasks">drawMasks</a></dt>
 <dd><p>Appends a new group element into the mainGroup of the viewer.
@@ -48,7 +82,7 @@ The group contains masks as rectangles to give the effect of new GP fading-in/ou
 <dd><p>Update the size and position of the masks</p>
 </dd>
 <dt><a href="#drawDragArea">drawDragArea</a></dt>
-<dd><p>Draws a draggable area ||| to redifine the widthassigned to the tree.</p>
+<dd><p>Draws a draggable area ||| to redefine the width assigned to the tree.</p>
 </dd>
 </dl>
 
@@ -74,7 +108,7 @@ This Class manages the file that defines that hierarchy and uses is to allow fil
     * [.nodes](#GenomePropertiesHierarchy+nodes) : <code>Object</code>
     * [.root](#GenomePropertiesHierarchy+root) : <code>Object</code>
     * [.hierarchy_switch](#GenomePropertiesHierarchy+hierarchy_switch) : <code>Array</code>
-    * [.dipatcher](#GenomePropertiesHierarchy+dipatcher) : <code>Object</code>
+    * [.dispatcher](#GenomePropertiesHierarchy+dispatcher) : <code>Object</code>
     * [.load_hierarchy_from_path(path)](#GenomePropertiesHierarchy+load_hierarchy_from_path) ⇒ [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)
     * [.load_hierarchy_from_data(data)](#GenomePropertiesHierarchy+load_hierarchy_from_data)
     * [.add_node_recursively(node)](#GenomePropertiesHierarchy+add_node_recursively)
@@ -106,9 +140,9 @@ Reference to the root of the GP hierarchy
 List of top level GP indicating if its enabled or not for filtering purposes
 
 **Kind**: instance property of [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)  
-<a name="GenomePropertiesHierarchy+dipatcher"></a>
+<a name="GenomePropertiesHierarchy+dispatcher"></a>
 
-### genomePropertiesHierarchy.dipatcher : <code>Object</code>
+### genomePropertiesHierarchy.dispatcher : <code>Object</code>
 Event dispatcher using `d3.dispatch`
 
 **Kind**: instance property of [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)  
@@ -127,18 +161,18 @@ Fetches  the hierarchy from a given URL, and triggers the processing of the file
 <a name="GenomePropertiesHierarchy+load_hierarchy_from_data"></a>
 
 ### genomePropertiesHierarchy.load\_hierarchy\_from\_data(data)
-Defines all the atrributes by processing the JSON object
+Defines all the attributes by processing the JSON object
 
 **Kind**: instance method of [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| data | <code>Object</code> | Object representing the root of the Hierachy |
+| data | <code>Object</code> | Object representing the root of the Hierarchy |
 
 <a name="GenomePropertiesHierarchy+add_node_recursively"></a>
 
 ### genomePropertiesHierarchy.add\_node\_recursively(node)
-Wlaks the tree, adding each node in `this.nodes` and generating a list of parents(in `node.parents`) for each node.
+Walks the tree, adding each node in `this.nodes` and generating a list of parents(in `node.parents`) for each node.
 
 **Kind**: instance method of [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)  
 
@@ -173,7 +207,7 @@ Gets the top level genome properties associated with a given node
 <a name="GenomePropertiesHierarchy+toggle_switch"></a>
 
 ### genomePropertiesHierarchy.toggle\_switch(id)
-finds the top level property with the given id,  toggles the value of `enable`, and then dispatches an event announceing the change.
+Finds the top level property with the given id, toggles the value of `enable`, and then dispatches an event announcing the change.
 
 **Kind**: instance method of [<code>GenomePropertiesHierarchy</code>](#GenomePropertiesHierarchy)  
 
@@ -191,12 +225,12 @@ shortcut to add invoke a callback when one of the dispatched events gets trigger
 
 | Param | Type | Description |
 | --- | --- | --- |
-| typename | <code>String</code> | one of the dispatched events: "siwtchChanged", "hierarchyLoaded" |
+| typename | <code>String</code> | one of the dispatched events: "switchChanged", "hierarchyLoaded" |
 
 <a name="GPModal"></a>
 
 ## GPModal
-Manager for a modla dialog, that has an overlay grey area and a dialog box in the middle
+Manager for a modal dialog, that has an overlay grey area and a dialog box in the middle
 
 **Kind**: global class  
 
@@ -265,7 +299,7 @@ Creates a panel with a slider and +/- buttons to allow resizing the view
 <a name="new_ZoomPanel_new"></a>
 
 ### new ZoomPanel(options)
-Sets all the passed options in class atributes and initiates a d3.scale for the slider.
+Sets all the passed options in class attributes and initiates a d3.scale for the slider.
 
 
 | Param | Type | Description |
@@ -294,10 +328,9 @@ Sets all the passed options in class atributes and initiates a d3.scale for the 
 
 ### zoomPanel.draw\_panel()
 Appends a group in the given container that includes the SVG elements to represent the zoomer.
-It also sets the events binding them to the callback funtions passed in the options object.
+It also sets the events binding them to the callback functions passed in the options object.
 
 **Kind**: instance method of [<code>ZoomPanel</code>](#ZoomPanel)  
-**Summary**: If the description is long, write your summary here. Otherwise, feel free to remove this.  
 <a name="ZoomPanel+refresh"></a>
 
 ### zoomPanel.refresh()
@@ -322,21 +355,26 @@ Add a new circular button into a panel
 <a name="filterByLegend"></a>
 
 ## filterByLegend
+Filters genome properties by the quantifier applied to each cell value (YES / NO / PARTIAL).
+
+A cell in the heatmap can have 1 of 3 values: YES, NO or PARTIAL, indicating whether
+there is evidence that the GP is present in a given species.
+Given multiple species, this function filters the list of genome properties to those where
+the currently selected species match the given quantifier condition. For example:
+
+|Value    | Filter | JSON               | Explanation                                              |
+|---------|--------|--------------------|----------------------------------------------------------|
+| YES     | ∀      | `{"YES": "∀"}`     | All selected species have this GP                        |
+| NO      | ∃      | `{"NO": "∃"}`      | At least 1 selected species does not have this GP        |
+| PARTIAL | ∄      | `{"PARTIAL": "∄"}` | None of the selected species have partial evidence of this GP |
+
+The current set of filters is in `viewer.legend_filters` and the filtered props will be saved in `viewer.props`.
+
 **Kind**: global constant  
-**Summary**: A cell in the heatmap can have 1 of 3 values: Yes, No or partial. Indicating if there is evidence that the GP is present in a given species.
-Given multiple species, this function filters the list of genome properties to which currentluy selected species match the given condition, For example:
-
-|Value    | Filter | JSON               | Explanation                                          |
-|---------|--------|--------------------|------------------------------------------------------|
-| YES     | ∀      | `{"YES": "∀"}`     | All the species have this GP                         |
-| NO      | ∃      | `{"NO": "∃"}`      | There is at least 1 species with this GP             |
-| PARTIAL | ∄      | `{"PARTIAL": "∄"}` | None of the species have partial evidence of this GP |
-
-The current set of filters is in `viewer.legend_filters` and the filtered props will be saved in `viewer.props`.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properties viewer |
 
 <a name="filterByHierarchy"></a>
 
@@ -348,42 +386,42 @@ by only including those whose `parent_top_properties` are included in `viewer.gp
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properties viewer |
 
 <a name="filterByText"></a>
 
 ## filterByText
-Filters the list of properties in `viewer.props` by checnking if their name includes the text in `viewer.filter_text`
+Filters the list of properties in `viewer.props` by checking if their name includes the text in `viewer.filter_text`
 
 **Kind**: global constant  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properties viewer |
 
 <a name="transformByScroll"></a>
 
 ## transformByScroll
-Updates this and othe components as if a scroll event happened.
-It became the de-facto refresh of the whole viewer, as it groups the minimum necesary changes to trigger a full update.
+Updates this and other components as if a scroll event happened.
+It became the de-facto refresh of the whole viewer, as it groups the minimum necessary changes to trigger a full update.
 
 **Kind**: global constant  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properites viewer |
 
 <a name="drawScrollXBar"></a>
 
 ## drawScrollXBar
 Append a group into the viewer's mainGroup.
-It contains the elements to draw a simple horizontal srollbar, and attach the dragging events to them.
+It contains the elements to draw a simple horizontal scrollbar, and attach the dragging events to them.
 
 **Kind**: global constant  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properites viewer |
 
 <a name="updateScrollBars"></a>
 
@@ -394,21 +432,21 @@ A single method to trigger the update of all the scroll bars of the viewer. We c
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
-| visible_cols | <code>Number</code> | Indicates how many columns are visible in the area assgined to the heatmap. |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properites viewer |
+| visible_cols | <code>Number</code> | Indicates how many columns are visible in the area assigned to the heatmap. |
 | current_col | <code>Number</code> | Indicates the index of the first visible column out of the total number of GP. |
 
 <a name="createGradient"></a>
 
 ## createGradient
 Appends a `defs` element in the main group of the viewer.
-It contains the definitions of the gradients used in th masks around the heatmap
+It contains the definitions of the gradients used in the masks around the heatmap
 
 **Kind**: global constant  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properites viewer |
 
 <a name="drawMasks"></a>
 
@@ -420,7 +458,7 @@ The group contains masks as rectangles to give the effect of new GP fading-in/ou
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properites viewer |
 
 <a name="updateMasks"></a>
 
@@ -431,18 +469,18 @@ Update the size and position of the masks
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properites viewer |
 
 <a name="drawDragArea"></a>
 
 ## drawDragArea
-Draws a draggable area ||| to redifine the widthassigned to the tree.
+Draws a draggable area ||| to redefine the width assigned to the tree.
 
 **Kind**: global constant  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properites viewer |
 
 <a name="updateScrollBarX"></a>
 
@@ -454,7 +492,7 @@ The size of the draggable is proportional to the number of visible columns in th
 
 | Param | Type | Description |
 | --- | --- | --- |
-| viewer | <code>GernomeProperiesViewer</code> | The instance of the genome properites viewer |
-| visible_cols | <code>Number</code> | Indicates how many columns are visible in the area assgined to the heatmap. |
+| viewer | <code>GenomePropertiesViewer</code> | The instance of the genome properites viewer |
+| visible_cols | <code>Number</code> | Indicates how many columns are visible in the area assigned to the heatmap. |
 | current_col | <code>Number</code> | Indicates the index of the first visible column out of the total number of GP. |
 

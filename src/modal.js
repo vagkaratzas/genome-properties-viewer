@@ -1,6 +1,6 @@
 import * as d3 from "./d3";
 /**
- * Manager for a modla dialog, that has an overlay grey area and a dialog box in the middle
+ * Manager for a modal dialog, that has an overlay grey area and a dialog box in the middle
  */
 class GPModal {
   /**

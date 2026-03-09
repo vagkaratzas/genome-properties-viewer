@@ -1,4 +1,4 @@
-import { tsvParseRows, select } from "./d3";
+import { tsvParseRows } from "./d3";
 
 const isLineOK = (line) => line.length === 3;
 
@@ -23,7 +23,7 @@ export const enableSpeciesFromPreLoaded = (
   viewer,
   taxId,
   isFromFile = false,
-  shouldUpdate = true
+  shouldUpdate = true,
 ) => {
   let tax_id = Number(taxId);
   if (Number.isNaN(tax_id)) tax_id = taxId;
@@ -37,18 +37,18 @@ export const loadGenomePropertiesText = (
   viewer,
   label,
   text,
-  isFromFile = false
+  isFromFile = false,
 ) => {
   try {
     const obj = JSON.parse(text);
     mergeObjectToData(viewer.data, obj);
     const objOrgs = Object.keys(Object.values(obj)[0].values).filter(
-      (x) => x !== "TOTAL"
+      (x) => x !== "TOTAL",
     );
     for (const org of objOrgs) {
       enableSpeciesFromPreLoaded(viewer, org, isFromFile);
     }
-  } catch (e) {
+  } catch {
     // eslint-disable-next-line no-console
     console.warn("File is not JSON. Trying to parse it as TSV now.");
     const wl = viewer.whitelist;
@@ -70,7 +70,7 @@ export const loadGenomePropertiesText = (
           name: d[1],
           values: { TOTAL: { YES: 0, NO: 0, PARTIAL: 0 } },
           parent_top_properties: viewer.gp_hierarchy.get_top_level_gp_by_id(
-            d[0]
+            d[0],
           ),
           // TODO: Replace for actual steps information
           steps: d[0]
@@ -92,7 +92,7 @@ export const loadGenomePropertiesText = (
       viewer.organism_totals[tax_id][d[2]]++;
       // TODO: Replace for actual steps information
       viewer.data[d[0]].steps.forEach(
-        (step) => (step.values[tax_id] = Math.random() > 0.5)
+        (step) => (step.values[tax_id] = Math.random() > 0.5),
       );
     });
     if (allLinesAreOK) {
@@ -101,12 +101,12 @@ export const loadGenomePropertiesText = (
         viewer.propsOrder = Object.keys(viewer.data).sort();
       viewer.update_viewer(500);
     } else {
-      delete viewer.organisms[tax_id];
+      viewer.organisms.splice(viewer.organisms.indexOf(tax_id), 1);
       delete viewer.organism_totals[tax_id];
       throw new Error(
         `File didn't load. The following lines have errors:${errorLines
           .map((l) => l.join(": "))
-          .join("\n")}`
+          .join("\n")}`,
       );
     }
   }
@@ -116,7 +116,7 @@ export const preloadSpecies = (viewer, data) => {
   viewer.data = data;
   Object.values(viewer.data).forEach((gp) => {
     gp.parent_top_properties = viewer.gp_hierarchy.get_top_level_gp_by_id(
-      gp.property
+      gp.property,
     );
     gp.isShowingSteps = false;
   });
@@ -145,8 +145,7 @@ function concat(arrays) {
   return newArray.buffer;
 }
 export class FileGetter {
-  constructor({ element = "body", viewer }) {
-    this.base = select(element);
+  constructor({ viewer }) {
     this.files = {};
     this.isActive = false;
     this.viewer = viewer;
@@ -154,11 +153,12 @@ export class FileGetter {
     this.activeGauges = [];
     setInterval(
       (_this) => {
-        _this.activeGauge =
-          (_this.activeGauge + 1) % Object.values(_this.activeGauges).length;
+        if (_this.activeGauges.length > 0)
+          _this.activeGauge =
+            (_this.activeGauge + 1) % _this.activeGauges.length;
       },
       3000,
-      this
+      this,
     );
   }
 
@@ -167,14 +167,13 @@ export class FileGetter {
   }
 
   async getText(path, shouldParseAsJSON = false) {
-    if (this.files[path]) return this.files[path].request;
+    if (this.files[path]) return this.files[path].data;
     this.files[path] = {
       loading: true,
       path,
     };
     const { modal } = this.viewer;
     if (!this.isActive) this.createProgressContent(modal);
-    // this.activeGauge = path;
     const response = await fetch(path);
     this.files[path].request = response;
     const total = response.headers.get("content-length");
@@ -187,7 +186,6 @@ export class FileGetter {
       loaded = responseAsArrayBuffer.byteLength;
       this.files[path].progress = 1;
     } else {
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         // eslint-disable-next-line no-await-in-loop
         const { done, value } = await reader.read();
@@ -203,11 +201,7 @@ export class FileGetter {
       }
       responseAsArrayBuffer = concat(values);
     }
-    const codeUnits = new Uint8Array(responseAsArrayBuffer);
-    let text = "";
-    for (let i = 0; i < codeUnits.length; i++) {
-      text += String.fromCharCode(codeUnits[i]);
-    }
+    const text = new TextDecoder().decode(responseAsArrayBuffer);
     this.files[path].loading = false;
     this.files[path].data = shouldParseAsJSON ? JSON.parse(text) : text;
 
@@ -255,7 +249,7 @@ export class FileGetter {
     this.gaugeLabel.text(
       this.activeGauges[this.activeGauge]
         ? this.activeGauges[this.activeGauge].path
-        : ""
+        : "",
     );
 
     const requestDiv = this.requestsList
@@ -270,12 +264,11 @@ export class FileGetter {
         (d) => `${d.path}: 
         ${d.progress ? (d.progress * 100).toFixed(1) : " ? "}% 
         - ${d.event ? d.event.loaded : "_"}/${(d.event && d.event.total) || "?"}
-       `
+       `,
       );
 
-    const w = this.gaugeSVG.node().getBoundingClientRect().width;
-
     const gauges = this.gaugeSVG.selectAll("g.gauge").data(this.activeGauges);
+    const w = 100;
     const current = this.activeGauge;
 
     const gauge = gauges
@@ -286,7 +279,7 @@ export class FileGetter {
 
     const r = w / 2 - 10;
 
-    const circunferencia = 2 * Math.PI * r;
+    const circumference = 2 * Math.PI * r;
     gauge
       .append("circle")
       .attr("class", "gauge-bg")
@@ -297,8 +290,8 @@ export class FileGetter {
       .append("circle")
       .attr("class", "gauge-val")
       .attr("stroke-linecap", "round")
-      .attr("stroke-dasharray", circunferencia)
-      .attr("stroke-dashoffset", circunferencia)
+      .attr("stroke-dasharray", circumference)
+      .attr("stroke-dashoffset", circumference)
       .attr("r", r)
       .attr("transform", `rotate(90,${w / 2},${w / 2})`)
       .attr("cx", w / 2)
@@ -321,8 +314,8 @@ export class FileGetter {
       .classed("uncertain", (d) => d.progress === null)
       .attr("stroke-dashoffset", (d) =>
         d.progress === null
-          ? circunferencia / 2
-          : circunferencia * (1 - d.progress)
+          ? circumference / 2
+          : circumference * (1 - d.progress),
       );
   }
 }
@@ -354,7 +347,7 @@ export const uploadLocalGPFile = (viewer, fileToRead) => {
       if (isIpproLine(firstline)) {
         viewer.modal.showContent(
           "<h3><div class='loading'>◉</div>Calculation Genome Properties from InterProScan Data</h3>",
-          true
+          true,
         );
 
         fetch(viewer.options.gp_server, {
@@ -374,13 +367,13 @@ export const uploadLocalGPFile = (viewer, fileToRead) => {
           .catch(() => {
             viewer.modal.showContent(
               "<h3><div class='error'>Server Error processing the file</div></h3>",
-              false
+              false,
             );
           });
       } else {
         viewer.loadGenomePropertiesText(
           reader.fileToRead.name,
-          evt.target.result
+          evt.target.result,
         );
       }
     } catch (e) {

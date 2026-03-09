@@ -1,26 +1,34 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
+<html lang="en">
 <head>
-    <link type="text/css" href="gp-style.css" rel="stylesheet"/>
-    <style>
-        html{
-            height: 100%;
-        }
-        body{
-            font: 12px sans-serif;
-            height: 100%;
-            margin: 0;
-        }
-
-    </style>
-    <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Genome Properties Viewer | MGnify</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link type="text/css" href="css/gp-style.css" rel="stylesheet"/>
+    <link type="text/css" href="css/mgnify-theme.css" rel="stylesheet"/>
+    <script>
+        // Apply saved theme before first paint to avoid flash of wrong theme.
+        (function () {
+            var saved = localStorage.getItem('gpv-theme');
+            if (saved) document.documentElement.dataset.theme = saved;
+        }());
+    </script>
 </head>
 <body>
 <div class="container">
-    <h1>Genome Properties Viewer</h1>
+    <h1>Genome Properties Viewer<button id="theme-toggle" title="Toggle dark/light mode">☾</button></h1>
     <div class="top-block">
         <div id="gp-controllers" class="top-controllers">
-            <div>
+            <div id="mode-selector">
+                <header>View Mode</header>
+                <ul>
+                    <li><label><input type="radio" name="viewer-mode" value="taxonomy" checked> Taxonomy Mode</label></li>
+                    <li><label><input type="radio" name="viewer-mode" value="erz"> ERZ Samples</label></li>
+                </ul>
+            </div>
+            <div id="taxonomy-panel">
                 <header>Taxonomy Options</header>
                 <ul>
                     <li><label for="tax-search">Search:</label><br/>
@@ -31,23 +39,29 @@
                         <input type="file" id="newfile" onchange="uploadFile()"/>
                     </li>
                     <li><input type="checkbox" id="collapse_tree" checked="checked"/><label for="collapse_tree">Collapse tree</label></li>
-                </div>
-                <div>
-                        <li><label for="tax_label">Labels:</label>
+                    <li><label for="tax_label">Labels:</label>
                         <select id="tax_label">
                             <option value="name">Species</option>
                             <option value="id">Tax ID</option>
                             <option value="both">Both</option>
                         </select>
                     </li>
-                    <li><button id="toggle-tree">Hide Taxonomy</button></li>
-
+                    <li>
+                        <div id="toggle-tree-container">
+                            <label><input type="radio" name="tree-visibility" value="show" checked> Show</label>
+                            <label><input type="radio" name="tree-visibility" value="hide"> Hide</label>
+                        </div>
+                    </li>
                 </ul>
+            </div>
+            <div id="erz-panel" style="display:none">
+                <header>ERZ Samples</header>
+                <ul id="erz-list"></ul>
             </div>
             <div>
                 <header>Genome Properties Options</header>
                 <ul>
-                    <li><label for="gp-selector">Top level category:</label><br/>
+                    <li><span>Top level category:</span><br/>
                         <div id="gp-selector" class="selector"></div>
                     </li>
                     <li><label for="gp-filter">Filter:</label><br/>
@@ -80,6 +94,7 @@
                 controller_element_selector: "#gp-selector",
                 model_species_path: "https://raw.githubusercontent.com/ProteinsWebTeam/genome-properties-viewer/master/test-files/JSON_MERGED",
                 gp_server: 'http://wwwdev.ebi.ac.uk/interpro/genomeproperties/cgi-bin/test.pl',
+                erz_path: "test-files/ERZ",
             });
     viewer.update_viewer();
     d3.select("#upload-button").on("click", function() {
@@ -111,11 +126,51 @@
         setTimeout(function(){ viewer.refresh_size(); }, 250);
 
     });
-    let showTaxonomy = true;
-    d3.select("#toggle-tree").on("click",(event, d)=>{
-        d3.select(event.currentTarget).text(showTaxonomy ? "Show Taxonomy" : "Hide Taxonomy");
-        showTaxonomy = !showTaxonomy;
-        viewer.gp_taxonomy.show_tree = showTaxonomy;
+    var erzFiles = ["ERZ27321143", "ERZ773154"];
+    var selectedERZ = new Set();
+
+    function renderERZCheckboxes() {
+        var items = d3.select("#erz-list").selectAll("li")
+            .data(erzFiles, function(d) { return d; });
+        var li = items.enter().append("li");
+        var label = li.append("label");
+        label.append("input")
+            .attr("type", "checkbox")
+            .attr("value", function(d) { return d; })
+            .on("change", function(event, d) {
+                if (d3.select(this).property("checked")) {
+                    selectedERZ.add(d);
+                    viewer.enableERZ(d);
+                } else {
+                    selectedERZ.delete(d);
+                    viewer.removeERZ(d);
+                }
+            });
+        label.append("span").text(function(d) { return " " + d; });
+    }
+    renderERZCheckboxes();
+
+    viewer.erz_change_callback = function(organisms) {
+        selectedERZ.clear();
+        organisms.forEach(function(o) { selectedERZ.add(o); });
+        d3.select("#erz-list").selectAll("input[type=checkbox]")
+            .property("checked", function(d) { return selectedERZ.has(d); });
+    };
+
+    d3.selectAll('input[name="viewer-mode"]').on("change", function() {
+        if (this.value === "erz") {
+            d3.select("#taxonomy-panel").style("display", "none");
+            d3.select("#erz-panel").style("display", null);
+            viewer.switchToERZMode();
+        } else {
+            d3.select("#taxonomy-panel").style("display", null);
+            d3.select("#erz-panel").style("display", "none");
+            viewer.switchToTaxonomyMode();
+        }
+    });
+
+    d3.selectAll('input[name="tree-visibility"]').on("change", function() {
+        viewer.gp_taxonomy.show_tree = this.value === "show";
         viewer.update_viewer();
     });
 
@@ -127,7 +182,32 @@
         for (let i=0; i < oFiles.length; i++){
             gpv.uploadLocalGPFile(viewer,oFiles[i] )
         }
-
     }
+
+    // ---- Theme toggle ----
+    (function () {
+        var btn = document.getElementById('theme-toggle');
+
+        function effectiveDark() {
+            var t = document.documentElement.dataset.theme;
+            if (t === 'dark') return true;
+            if (t === 'light') return false;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+
+        function syncButton() {
+            btn.textContent = effectiveDark() ? '\u2600' : '\u263E'; // ☀ : ☾
+            btn.title = effectiveDark() ? 'Switch to light mode' : 'Switch to dark mode';
+        }
+
+        btn.addEventListener('click', function () {
+            var next = effectiveDark() ? 'light' : 'dark';
+            document.documentElement.dataset.theme = next;
+            localStorage.setItem('gpv-theme', next);
+            syncButton();
+        });
+
+        syncButton();
+    }());
 </script>
 </body>

@@ -4,11 +4,8 @@ import ZoomPanel from "./zoomer";
 import TaxonomySortButton from "./gp-taxonomy-sorter";
 import GenomePropertiesController from "./gp-controller";
 import { updateStepToggler, updateSteps } from "./gp-steps";
-import "regenerator-runtime/runtime";
-
 import {
   drawScrollXBar,
-  // drawScrollYBar,
   transformByScroll,
   updateScrollBars,
 } from "./gp-scroller";
@@ -60,6 +57,8 @@ export default class GenomePropertiesViewer {
     tax_search_selector = "#tax-search",
     template_link_to_GP_page = "https://wwwdev.ebi.ac.uk/interpro/genomeproperties/#{}",
     gp_server = "http://wwwdev.ebi.ac.uk/interpro/genomeproperties/cgi-bin/test.pl",
+    erz_path = "test-files/ERZ",
+    erz_merged_path = "test-files/ERZ/ERZ_MERGED.json",
     dimensions = {
       tree: { width: 180 },
       total: { short_side: cell_side },
@@ -76,18 +75,17 @@ export default class GenomePropertiesViewer {
     this.whitelist = null;
     this.fixedHeight = height !== null;
     this.propsOrder = null;
+    this.erz_mode = false;
+    this._taxonomy_state = null;
+    this.erz_change_callback = null;
 
     this.modal = new GPModal(element_selector);
+    this.fileGetter = new FileGetter({ viewer: this });
 
-    this.fileGetter = new FileGetter({
-      element: ".gp-modal-content",
-      viewer: this,
-    });
     if (width === null) {
       const rect = d3.select(element_selector).node().getBoundingClientRect();
       width = rect.width;
     }
-
     if (!this.fixedHeight) {
       let rect = d3.select(element_selector).node().getBoundingClientRect();
       if (rect.height < 1) {
@@ -107,15 +105,22 @@ export default class GenomePropertiesViewer {
       server_tax,
       total_panel_height,
       hierarchy_path,
+      model_species_path,
       template_link_to_GP_page,
       dimensions,
+      erz_path,
+      erz_merged_path,
+      controller_element_selector,
+      legends_element_selector,
+      gp_text_filter_selector,
+      gp_label_selector,
+      tax_label_selector,
+      tax_search_selector,
     };
+
     this.column_total_width = cell_side;
     this.x = d3.scaleLinear().range([0, cell_side]);
     this.y = d3.scaleBand().range([cell_side, cell_side]);
-    // this.x = d3.scaleBand().range([0, width - this.column_total_width]);
-    // this.y = d3.scaleLinear().range([0, cell_side]);
-    this.gp_values = ["YES", "PARTIAL", "NO"];
     this.c = {
       YES: "rgb(49, 130, 189)",
       PARTIAL: "rgb(107, 174, 214)",
@@ -128,12 +133,27 @@ export default class GenomePropertiesViewer {
         .then((response) => {
           if (!response.ok)
             throw new Error(`${response.status} ${response.statusText}`);
-          return response.json;
+          return response.json();
         })
         .then((data) => {
           this.whitelist = data;
         });
     }
+
+    this.options.dimensions.heatmap_x_offset = 20;
+
+    this._createSVG();
+    this._initTaxonomy();
+    this._initHierarchy();
+    this._initControls();
+    this._drawLayout();
+    new ResizeObserver(() => this.refresh_size()).observe(
+      d3.select(element_selector).node(),
+    );
+  }
+
+  _createSVG() {
+    const { element_selector, width, height } = this.options;
     this.svg = d3
       .select(element_selector)
       .append("svg")
@@ -175,35 +195,36 @@ export default class GenomePropertiesViewer {
       .on("keyup", () => {
         this.step = 1;
       });
+
     this.mainGroup.x = 0;
     this.mainGroup.y = 0;
     createGradient(this);
+  }
 
+  _initTaxonomy() {
+    const { server_tax, dimensions, height } = this.options;
     this.gp_taxonomy = new GenomePropertiesTaxonomy({
       path: server_tax,
-      x: 30, // TODO: change for new margin
-      y: this.options.dimensions.total.short_side,
+      x: 30,
+      y: dimensions.total.short_side,
       height:
-        this.options.height -
-        this.options.dimensions.total.short_side -
-        this.options.dimensions.scroller.short_side,
-      width: this.options.dimensions.tree.width,
+        height - dimensions.total.short_side - dimensions.scroller.short_side,
+      width: dimensions.tree.width,
     })
       .on("changeOrder", (order) => {
         this.current_order = order;
         this.order_organisms_current_order();
       })
-      .on("spaciesRequested", (taxId) => {
-        // loadGenomePropertiesFile(this, taxId);
+      .on("speciesRequested", (taxId) => {
         enableSpeciesFromPreLoaded(this, taxId);
       })
-      .on("multipleSpaciesRequested", (taxa) => {
+      .on("multipleSpeciesRequested", (taxa) => {
         for (const taxId of taxa) {
           enableSpeciesFromPreLoaded(this, taxId, false, false);
         }
         this.update_viewer(500);
       })
-      .on("removeSpacies", (event, taxId) => {
+      .on("removeSpecies", (event, taxId) => {
         event.stopPropagation();
         removeGenomePropertiesFile(this, taxId);
       })
@@ -215,37 +236,50 @@ export default class GenomePropertiesViewer {
     this.fileGetter.getJSON(server_tax).then((data) => {
       this.gp_taxonomy.load_taxonomy_obj(data);
     });
+  }
 
-    this.gp_hierarchy = new GenomePropertiesHierarchy()
-      // .load_hierarchy_from_path(this.options.hierarchy_path)
-      .on("siwtchChanged", () => {
+  _initHierarchy() {
+    const { hierarchy_path, model_species_path } = this.options;
+    this.gp_hierarchy = new GenomePropertiesHierarchy().on(
+      "switchChanged",
+      () => {
         this.mainGroup.y = 0;
         d3.select(".gpv-rows-group").attr(
           "transform",
-          `translate(${this.mainGroup.x},${this.mainGroup.y})`
+          `translate(${this.mainGroup.x},${this.mainGroup.y})`,
         );
         this.update_viewer(500);
         updateTotalPerOrganismPanel(this);
-      });
+      },
+    );
     this.fileGetter.getJSON(hierarchy_path).then((data) => {
       this.gp_hierarchy.load_hierarchy_from_data(data);
       this.fileGetter.getJSON(model_species_path).then((dataSpecies) => {
         preloadSpecies(this, dataSpecies);
       });
     });
-    // if (hierarchy_path) {
-    //   this.gp_hierarchy.load_hierarchy_from_data(hierarchy_path);
-    //   this.fileGetter.getJSON(model_species_path).get(data => {
-    //     preloadSpecies(this, data);
-    //   });
-    // }
+  }
+
+  _initControls() {
+    const {
+      controller_element_selector,
+      legends_element_selector,
+      gp_text_filter_selector,
+      gp_label_selector,
+      tax_label_selector,
+      tax_search_selector,
+    } = this.options;
+
+    this.gp_label_type = "name";
+    this.buttonHeight = 25;
+
     this.sorter = new TaxonomySortButton({
       container: this.mainGroup,
       x: 0,
       y: 0,
       function_sort: (mode) => this.gp_taxonomy.sortBy(mode),
     });
-    this.buttonHeight = 25;
+
     this.zoomer = new ZoomPanel({
       x: 0,
       y: this.buttonHeight,
@@ -256,14 +290,11 @@ export default class GenomePropertiesViewer {
       function_slide: (event) => {
         const newY = Math.max(
           this.zoomer.slider(this.zoomer.domain[1]),
-          Math.min(event.y, this.zoomer.slider(this.zoomer.domain[0]))
+          Math.min(event.y, this.zoomer.slider(this.zoomer.domain[0])),
         );
         this.cell_side = Math.round(this.zoomer.slider.invert(newY));
       },
     });
-
-    // this.legends_filter = { YES: "", NO: "", PARTIAL: "" };
-    this.gp_label_type = "name";
 
     this.controller = new GenomePropertiesController({
       gp_element_selector: controller_element_selector,
@@ -274,27 +305,28 @@ export default class GenomePropertiesViewer {
       tax_search_selector,
       gp_viewer: this,
       gp_taxonomy: this.gp_taxonomy,
-      hierarchy_contorller: this.gp_hierarchy,
+      hierarchy_controller: this.gp_hierarchy,
     }).on("legendFilterChanged", (filters) => {
       this.legend_filters = filters;
       this.update_viewer();
     });
-    this.gp_taxonomy.on("taxonomyLoaded", () =>
-      this.controller.loadSearchOptions()
-    );
 
+    this.gp_taxonomy.on("taxonomyLoaded", () =>
+      this.controller.loadSearchOptions(),
+    );
+  }
+
+  _drawLayout() {
     this.current_scroll = { x: 0, y: 0 };
     this.draw_columns_panel();
     this.draw_rows_panel();
     drawMasks(this);
     this.gp_taxonomy.draw_tree_panel(this.mainGroup);
-    this.zoomer.draw_panel(); // TODO: check the new place
+    this.zoomer.draw_panel();
     this.sorter.draw();
     drawTotalPerOrganismPanel(this);
     drawScrollXBar(this);
-    // drawScrollYBar(this);
     drawDragArea(this);
-    window.addEventListener("resize", () => this.refresh_size());
   }
 
   refresh_size() {
@@ -302,11 +334,27 @@ export default class GenomePropertiesViewer {
       .select(this.options.element_selector)
       .node()
       .getBoundingClientRect();
+    if (!rect.width) return;
     this.options.width = rect.width;
     d3.select(this.options.element_selector)
       .select("svg")
       .attr("width", rect.width);
     this.x.range([0, this.options.cell_side]);
+
+    // Clamp horizontal scroll so columns never scroll entirely off-screen
+    // after a resize (e.g. window narrowed or scrollbar appeared).
+    if (this.props && this.props.length) {
+      const tw = this.props.length * this.options.cell_side;
+      const minX =
+        -tw +
+        rect.width -
+        this.options.dimensions.tree.width -
+        this.options.cell_side;
+      this.current_scroll.x = Math.max(
+        minX,
+        Math.min(0, this.current_scroll.x),
+      );
+    }
 
     this.update_viewer();
   }
@@ -328,14 +376,14 @@ export default class GenomePropertiesViewer {
     const limY = this.newCols.node().getBBox().height - this.options.height;
     this.current_scroll.y = Math.max(
       0,
-      Math.min(limY, this.current_scroll.y + dy)
+      Math.min(limY, this.current_scroll.y + dy),
     );
     this.current_scroll.x = Math.max(
       -tw +
         this.options.width -
         this.options.dimensions.tree.width -
         this.options.cell_side,
-      Math.min(0, this.current_scroll.x + dx)
+      Math.min(0, this.current_scroll.x + dx),
     );
     this.refresh(this);
   }
@@ -377,7 +425,11 @@ export default class GenomePropertiesViewer {
   draw_columns_panel() {
     this.newCols = this.mainGroup
       .append("g")
-      .attr("class", "gpv-new-cols-group");
+      .attr("class", "gpv-new-cols-group")
+      .attr(
+        "transform",
+        `translate(${this.options.dimensions.heatmap_x_offset}, 0)`,
+      );
   }
 
   move_row(prop, delta) {
@@ -398,18 +450,20 @@ export default class GenomePropertiesViewer {
       this.props = this.props.sort(
         (a, b) =>
           this.propsOrder.indexOf(a.property) -
-          this.propsOrder.indexOf(b.property)
+          this.propsOrder.indexOf(b.property),
       );
     }
   }
 
-  update_viewer(time = 0) {
-    this.props = this.organisms.length ? Object.values(this.data) : [];
-    refreshGPTotals(this);
-    filterByHierarchy(this);
-    filterByText(this);
-    filterByLegend(this);
-    this.sort_props();
+  update_viewer(time = 0, skip_filter = false) {
+    if (!skip_filter || !this.props) {
+      this.props = this.organisms.length ? Object.values(this.data) : [];
+      refreshGPTotals(this);
+      filterByHierarchy(this);
+      filterByText(this);
+      filterByLegend(this);
+      this.sort_props();
+    }
     this._adjustXScaleBasedOnSteps();
 
     this.column_total_width = this.options.cell_side;
@@ -422,7 +476,7 @@ export default class GenomePropertiesViewer {
       (gp, i) =>
         this.x(i + 1) + this.current_scroll.x >= 0 &&
         this.x(i) + this.current_scroll.x <
-          this.options.width - this.options.dimensions.tree.width
+          this.options.width - this.options.dimensions.tree.width,
     );
     const dx = this.props.indexOf(this.current_props[0]);
     const visible_cols = this.current_props.length;
@@ -436,13 +490,12 @@ export default class GenomePropertiesViewer {
       .data(this.current_props, (d) => d.property);
 
     new_column_p
-      // .transition(t)
       .attr(
         "transform",
         (d, i) =>
           `translate(${this.x(i + dx) + this.options.dimensions.tree.width}, ${
             this.options.dimensions.total.short_side
-          })`
+          })`,
       )
       .each((d, i, c) => this.update_col(d, i, c));
 
@@ -462,7 +515,7 @@ export default class GenomePropertiesViewer {
       (d, i) =>
         `translate(${this.x(i + dx) + this.options.dimensions.tree.width}, ${
           this.options.dimensions.total.short_side
-        })`
+        })`,
     );
 
     d3.selectAll("g.column line")
@@ -517,7 +570,7 @@ export default class GenomePropertiesViewer {
       .attr(
         "transform",
         (d, i) =>
-          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`
+          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`,
       );
 
     const newRow = new_row_p
@@ -527,7 +580,7 @@ export default class GenomePropertiesViewer {
       .attr(
         "transform",
         (d, i) =>
-          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`
+          `translate(${this.options.dimensions.tree.width}, ${this.y(i)})`,
       );
 
     new_row_p
@@ -537,6 +590,7 @@ export default class GenomePropertiesViewer {
       .append("line")
       .attr("x2", this.props.length * this.options.cell_side);
 
+    this.newRows.attr("visibility", this.props.length ? null : "hidden");
     updateTotalPerOrganismPanel(this);
     updateMasks(this);
     this.sorter.y = 0;
@@ -544,6 +598,8 @@ export default class GenomePropertiesViewer {
     this.sorter.refresh();
     this.zoomer.refresh();
     if (!this.skip_scroll_refreshing) updateScrollBars(this, visible_cols, dx);
+    if (this.erz_mode && this.erz_change_callback)
+      this.erz_change_callback(this.organisms);
   }
 
   update_col(gp, i, c) {
@@ -566,8 +622,9 @@ export default class GenomePropertiesViewer {
       .select(c[i])
       .selectAll(".top_level_gp")
       .data(gp.parent_top_properties, (d) => d);
-    const text_heigth = d3.select("text").node().getBBox().height;
-    let radius = (side - text_heigth) / 2 - 4;
+    const textNode = this.svg.select("text").node();
+    const text_height = (textNode && textNode.getBBox().height) || 14;
+    let radius = (side - text_height) / 2 - 4;
     if (radius < 2) radius = 2;
     if (radius > 6) radius = 6;
 
@@ -647,7 +704,7 @@ export default class GenomePropertiesViewer {
 
     cells_t.attr(
       "transform",
-      () => `translate(${cell_width * 0.5}, ${side * -0.5})`
+      () => `translate(${cell_width * 0.5}, ${side * -0.5})`,
     );
 
     cells_t
@@ -720,5 +777,74 @@ export default class GenomePropertiesViewer {
 
   refresh() {
     transformByScroll(this);
+  }
+
+  async switchToERZMode() {
+    // Save taxonomy state so we can restore it later
+    const loaded_taxa = this.gp_taxonomy.nodes
+      ? Object.values(this.gp_taxonomy.nodes)
+          .filter((n) => n.loaded)
+          .map((n) => n.taxid)
+      : [];
+    this._taxonomy_state = {
+      data: this.data,
+      organism_totals: this.organism_totals,
+      propsOrder: this.propsOrder,
+      loaded_taxa,
+    };
+    // Unload all currently loaded taxonomy organisms from the tree
+    if (this.gp_taxonomy.nodes) {
+      Object.values(this.gp_taxonomy.nodes).forEach((n) => {
+        n.loaded = false;
+      });
+    }
+    this.organisms = [];
+    this.organism_totals = {};
+    this.propsOrder = null;
+    this.erz_mode = true;
+    this.gp_taxonomy.show_tree = false;
+
+    // Load the pre-built ERZ_MERGED.json (mirrors JSON_MERGED format,
+    // with step names sourced from JSON_MERGED via `npm run create-erz-merged`)
+    const data = await this.fileGetter.getJSON(this.options.erz_merged_path);
+    preloadSpecies(this, data);
+    this.update_viewer(0);
+  }
+
+  switchToTaxonomyMode() {
+    // Remove ERZ fake nodes that were added to the taxonomy
+    if (this.gp_taxonomy.nodes) {
+      const erzNodes = Object.values(this.gp_taxonomy.nodes).filter(
+        (n) => n.isFromFile,
+      );
+      for (const node of erzNodes) {
+        this.gp_taxonomy.remove_organism_loaded(node.taxid, true);
+      }
+    }
+    // Restore saved taxonomy state
+    const state = this._taxonomy_state || {};
+    this.data = state.data || {};
+    this.organism_totals = state.organism_totals || {};
+    this.propsOrder = state.propsOrder || null;
+    // Re-mark previously loaded taxa
+    for (const taxId of state.loaded_taxa || []) {
+      if (this.gp_taxonomy.nodes && this.gp_taxonomy.nodes[taxId]) {
+        this.gp_taxonomy.nodes[taxId].loaded = true;
+      }
+    }
+    this._taxonomy_state = null;
+    this.erz_mode = false;
+    this.gp_taxonomy.show_tree = true;
+    this.update_viewer(0);
+  }
+
+  // Enable an ERZ organism from the pre-loaded ERZ_MERGED data
+  enableERZ(erzCode) {
+    enableSpeciesFromPreLoaded(this, erzCode, true, true);
+  }
+
+  // Remove an ERZ organism from the viewer
+  removeERZ(erzCode) {
+    removeGenomePropertiesFile(this, erzCode);
   }
 }

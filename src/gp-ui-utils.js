@@ -1,8 +1,8 @@
 import * as d3 from "./d3";
 /**
  * Appends a `defs` element in the main group of the viewer.
- * It contains the definitions of the gradients used in th masks around the heatmap
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * It contains the definitions of the gradients used in the masks around the heatmap
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const createGradient = (viewer) => {
   const defs = viewer.mainGroup.append("defs");
@@ -49,7 +49,7 @@ export const createGradient = (viewer) => {
 /**
  * Appends a new group element into the mainGroup of the viewer.
  * The group contains masks as rectangles to give the effect of new GP fading-in/out while horizontal scrolling
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const drawMasks = (viewer) => {
   viewer.masks = viewer.mainGroup.append("g").attr("class", "masks");
@@ -67,7 +67,7 @@ export const drawMasks = (viewer) => {
     .style("fill", "url(#gradientright)")
     .attr(
       "x",
-      viewer.options.width - viewer.options.dimensions.total.short_side * 1.2
+      viewer.options.width - viewer.options.dimensions.total.short_side * 1.2,
     )
     .attr("y", 0)
     .attr("width", viewer.options.dimensions.total.short_side * 1.2)
@@ -75,14 +75,14 @@ export const drawMasks = (viewer) => {
 };
 /**
  * Update the size and position of the masks
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const updateMasks = (viewer) => {
   viewer.masks
     .select(".total-background")
     .attr(
       "x",
-      viewer.options.width - viewer.options.dimensions.total.short_side * 1.2
+      viewer.options.width - viewer.options.dimensions.total.short_side * 1.2,
     )
     .attr("width", viewer.options.dimensions.total.short_side * 1.2)
     .attr("height", viewer.options.height);
@@ -94,41 +94,45 @@ export const updateMasks = (viewer) => {
 };
 
 /**
- * Draws a draggable area ||| to redifine the widthassigned to the tree.
- * @param {GernomeProperiesViewer} viewer - The instance of the genome properites viewer
+ * Draws a draggable area ||| to redefine the width assigned to the tree.
+ * @param {GenomePropertiesViewer} viewer - The instance of the genome properites viewer
  */
 export const drawDragArea = (viewer) => {
   const xLimit = 90;
+  const dragOffset = 10;
   let dx = 0;
   const g = viewer.mainGroup
     .append("g")
     .attr("class", "height-dragger")
-    .attr("transform", `translate(${viewer.options.dimensions.tree.width}, 0)`)
+    .attr(
+      "transform",
+      `translate(${viewer.options.dimensions.tree.width + dragOffset}, 0)`,
+    )
     .call(
       d3
         .drag()
         .on("drag", (event) => {
           const treeSpace = viewer.options.dimensions.tree.width;
-          // Forces limits for the drag
+          // Forces limits for the drag; subtract dragOffset so tree width is unaffected by the visual offset
           dx = Math.min(
-            Math.max(-treeSpace + event.x, xLimit - treeSpace),
-            viewer.options.width - treeSpace
+            Math.max(-treeSpace + event.x - dragOffset, xLimit - treeSpace),
+            viewer.options.width - treeSpace,
           );
-          g.attr("transform", `translate(${dx + treeSpace}, 0)`);
+          g.attr("transform", `translate(${dx + treeSpace + dragOffset}, 0)`);
         })
         .on("end", () => {
           const treeSpace = viewer.options.dimensions.tree.width;
           const new_width = treeSpace + dx;
           if (Number.isNaN(new_width)) return;
-          viewer.gp_taxonomy.dipatcher.call(
+          viewer.gp_taxonomy.dispatcher.call(
             "changeWidth",
             viewer.gp_taxonomy,
-            new_width
+            new_width,
           );
-          g.attr("transform", `translate(${new_width}, 0)`);
+          g.attr("transform", `translate(${new_width + dragOffset}, 0)`);
           viewer.gp_taxonomy.width = new_width;
           viewer.gp_taxonomy.update_tree();
-        })
+        }),
     );
   const side = viewer.options.cell_side / 2;
   g.append("rect")

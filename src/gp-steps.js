@@ -1,9 +1,8 @@
-import { symbol, symbolCross } from "d3-shape";
 import * as d3 from "./d3";
 
 const displayStepsModal = (viewer, gp) => {
   const organisms = viewer.gp_taxonomy.current_order.map(
-    (i) => viewer.organisms[i]
+    (i) => viewer.organisms[i],
   );
 
   const html = `<h3>Steps for ${gp.property}</h3>
@@ -15,8 +14,8 @@ const displayStepsModal = (viewer, gp) => {
                   .map(
                     (o) =>
                       `<th>${viewer.getOrganismNameFromTaxId(
-                        o
-                      )}<br/>(${o})</th>`
+                        o,
+                      )}<br/>(${o})</th>`,
                   )
                   .join("")}
             </tr>
@@ -29,15 +28,15 @@ const displayStepsModal = (viewer, gp) => {
                 ${organisms
                   .map(
                     (o) => `
-                    <td class="gp-${gp.values[o]}">
+                    <td>
                         <div class="step-popup ${
                           step.values[o] ? "passed" : "failed"
                         }" />
-                     </td>`
+                     </td>`,
                   )
                   .join("")}
             </tr>
-            `
+            `,
               )
               .join("")}
         </table>
@@ -80,8 +79,9 @@ const updateStepDetailsButton = (viewer, gp, element, cellSide) => {
     .attr("cy", top + half)
     .attr("r", half);
 
-  const symbol1 = symbol()
-    .type(symbolCross)
+  const symbol1 = d3
+    .symbol()
+    .type(d3.symbolCross)
     .size((cellSide / 2) ** 2);
   buttonG
     .merge(button)
@@ -133,7 +133,7 @@ export const updateSteps = (viewer, gp, element, cellSide, yScale) => {
           stepName: gp.steps[i].step_name,
           key: `${organism}__${i}`,
         })),
-      (d) => d.key
+      (d) => d.key,
     );
   stepPerSpecie.exit().remove();
   stepPerSpecie
@@ -149,7 +149,7 @@ export const updateSteps = (viewer, gp, element, cellSide, yScale) => {
     .attr("width", side)
     .attr("height", side)
     .attr("fill", (d) =>
-      d.value ? "rgba(100,250,100,0.7)" : "rgba(200,200,200,0.3)"
+      d.value ? "rgba(100,250,100,0.7)" : "rgba(200,200,200,0.3)",
     );
 };
 
@@ -205,11 +205,12 @@ export const updateStepToggler = (viewer, gp, element, cellSide) => {
     .merge(toggler)
     .attr(
       "transform",
-      `translate(0, ${localY})rotate(90,${cellSide / 2},${cellSide / 2})`
+      `translate(0, ${localY})rotate(90,${cellSide / 2},${cellSide / 2})`,
     )
     .attr(
       "class",
-      (id) => `step-toggler ${viewer.data[id].isShowingSteps ? "expanded" : ""}`
+      (id) =>
+        `step-toggler ${viewer.data[id].isShowingSteps ? "expanded" : ""}`,
     )
     .selectAll("path")
     .transition()

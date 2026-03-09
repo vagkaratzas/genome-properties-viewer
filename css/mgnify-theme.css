@@ -1,0 +1,1354 @@
+/*
+ * MGnify-inspired theme for Genome Properties Viewer
+ * Modelled after the EMBL-EBI MGnify visual language:
+ *   - EBI green (#009444) as the primary accent
+ *   - MGnify teal (#007C82) as the secondary accent
+ *   - Clean white card surfaces, soft shadows
+ *   - Inter / system-ui typography
+ *
+ * Load AFTER css/gp-style.css so these declarations take precedence.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
+
+/* ============================================================
+   1. DESIGN TOKENS
+   ============================================================ */
+
+:root {
+  /* Brand */
+  --gpv-green:          #009444;
+  --gpv-green-dark:     #006d31;
+  --gpv-green-light:    #4cba7a;
+  --gpv-green-bg:       #e8f5ed;
+  --gpv-teal:           #007C82;
+  --gpv-teal-dark:      #005f64;
+  --gpv-teal-light:     #4db6ac;
+  --gpv-teal-bg:        #e0f4f4;
+
+  /* Neutrals */
+  --gpv-dark:           #2c3e50;
+  --gpv-medium:         #546e7a;
+  --gpv-muted:          #78909c;
+  --gpv-border:         #dde4e8;
+  --gpv-border-light:   #eef1f3;
+  --gpv-bg:             #f2f5f7;
+  --gpv-surface:        #ffffff;
+  --gpv-surface-alt:    #f8fafb;
+
+  /* Heatmap cell values */
+  --gpv-yes:            #009444;
+  --gpv-partial:        #66b89a;
+  --gpv-no:             #e4e9ec;
+
+  /* Semantic */
+  --gpv-danger:         #d32f2f;
+  --gpv-warning:        #f57c00;
+
+  /* Typography */
+  --gpv-font:           "Inter", "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+  --gpv-font-mono:      "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --gpv-font-size:      13px;
+
+  /* Geometry */
+  --gpv-radius:         4px;
+  --gpv-radius-lg:      8px;
+  --gpv-radius-pill:    100px;
+  --gpv-shadow-sm:      0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --gpv-shadow:         0 2px 8px rgba(0,0,0,0.09), 0 1px 3px rgba(0,0,0,0.05);
+  --gpv-shadow-lg:      0 8px 24px rgba(0,0,0,0.11), 0 2px 8px rgba(0,0,0,0.06);
+
+  /* Transitions */
+  --gpv-transition:     0.18s ease;
+}
+
+/* ============================================================
+   2. PAGE BASE
+   ============================================================ */
+
+html {
+  box-sizing: border-box;
+  height: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: var(--gpv-font);
+  font-size: var(--gpv-font-size);
+  color: var(--gpv-dark);
+  background: var(--gpv-bg);
+  margin: 0;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   3. PAGE LAYOUT
+   ============================================================ */
+
+div.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  background: var(--gpv-bg);
+}
+
+/* ---------- site header / title bar ---------- */
+
+div.container > h1 {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 24px;
+  font-family: var(--gpv-font);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--gpv-surface);
+  background: linear-gradient(135deg, var(--gpv-green-dark) 0%, var(--gpv-green) 55%, var(--gpv-teal) 100%);
+  box-shadow: 0 2px 8px rgba(0,100,50,0.18);
+}
+
+
+/* ============================================================
+   4. CONTROL PANEL (top-block)
+   ============================================================ */
+
+div.container .top-block {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 10px 56px 10px 12px; /* right padding reserves space for the minimise button */
+  background: var(--gpv-bg);
+  border-bottom: 1px solid var(--gpv-border);
+  box-shadow: var(--gpv-shadow-sm);
+  position: relative;
+}
+
+.top-controllers {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+}
+
+/* ---- individual card ---- */
+.top-controllers > div {
+  background: var(--gpv-surface);
+  border: 1px solid var(--gpv-border);
+  border-radius: var(--gpv-radius-lg);
+  box-shadow: var(--gpv-shadow-sm);
+  margin: 0;
+  padding: 11px 16px 14px;
+  min-width: 185px;
+  position: relative;
+  transition: box-shadow var(--gpv-transition), border-color var(--gpv-transition);
+}
+
+.top-controllers > div:hover {
+  border-color: rgba(0, 124, 130, 0.4);
+  box-shadow: var(--gpv-shadow);
+}
+
+/* Green accent bar along the top edge of each card */
+.top-controllers > div::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gpv-green) 0%, var(--gpv-teal) 100%);
+  border-radius: var(--gpv-radius-lg) var(--gpv-radius-lg) 0 0;
+  opacity: 0;
+  transition: opacity var(--gpv-transition);
+}
+
+.top-controllers > div:hover::before,
+.top-controllers > div:focus-within::before {
+  opacity: 1;
+}
+
+/* Card section header */
+.top-controllers > div header {
+  position: static;
+  top: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--gpv-teal);
+}
+
+/* Small dot accent before header text */
+.top-controllers > div header::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gpv-green);
+  flex-shrink: 0;
+}
+
+/* Lists inside control cards */
+.top-controllers > ul {
+  margin: 0;
+}
+
+.top-controllers > div > ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.top-controllers > div ul li label,
+.top-controllers > div ul li span {
+  font-size: 11px;
+  color: var(--gpv-medium);
+  display: inline;
+}
+
+/* ============================================================
+   5. FORM CONTROLS
+   ============================================================ */
+
+.top-controllers input[type="text"],
+.top-controllers select {
+  width: 100%;
+  max-width: 200px;
+  display: block;
+  height: 28px;
+  padding: 3px 8px;
+  font-family: var(--gpv-font);
+  font-size: 12px;
+  color: var(--gpv-dark);
+  background: var(--gpv-surface);
+  border: 1px solid var(--gpv-border);
+  border-radius: var(--gpv-radius);
+  outline: none;
+  transition: border-color var(--gpv-transition), box-shadow var(--gpv-transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.top-controllers input[type="text"]:focus,
+.top-controllers select:focus {
+  border-color: var(--gpv-green);
+  box-shadow: 0 0 0 3px rgba(0,148,68,0.12);
+}
+
+/* Custom chevron on <select> */
+.top-controllers select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23546e7a'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+
+/* Checkbox and radio */
+.top-controllers input[type="checkbox"],
+.top-controllers input[type="radio"] {
+  accent-color: var(--gpv-green);
+  cursor: pointer;
+}
+
+/* ---- View Mode segmented toggle (Taxonomy / ERZ) ---- */
+
+#mode-selector ul {
+  display: flex;
+  flex-direction: row;
+  list-style: none;
+  padding: 3px;
+  margin: 0;
+  background: var(--gpv-bg);
+  border: 1px solid var(--gpv-border);
+  border-radius: var(--gpv-radius-pill);
+  gap: 2px;
+}
+
+#mode-selector ul li {
+  flex: 1;
+  display: block;
+  width: auto;
+  padding: 0;
+  text-align: center;
+}
+
+/* Hide the native radio button */
+#mode-selector input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Each segment label is the visual button */
+#mode-selector ul label {
+  display: block;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gpv-medium);
+  text-align: center;
+  border-radius: var(--gpv-radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background var(--gpv-transition), color var(--gpv-transition), box-shadow var(--gpv-transition);
+}
+
+/* Active segment */
+#mode-selector ul li:has(input:checked) label {
+  background: var(--gpv-green);
+  color: #fff;
+  box-shadow: var(--gpv-shadow-sm);
+  font-weight: 600;
+}
+
+/* Hover on inactive segment */
+#mode-selector ul li:not(:has(input:checked)) label:hover {
+  background: var(--gpv-green-bg);
+  color: var(--gpv-green-dark);
+}
+
+/* Generic buttons */
+.top-controllers button {
+  height: 28px;
+  padding: 0 14px;
+  font-family: var(--gpv-font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gpv-green-dark);
+  background: var(--gpv-green-bg);
+  border: 1px solid rgba(0,148,68,0.35);
+  border-radius: var(--gpv-radius-pill);
+  cursor: pointer;
+  transition: background var(--gpv-transition), color var(--gpv-transition), border-color var(--gpv-transition);
+}
+
+.top-controllers button:hover {
+  background: var(--gpv-green);
+  color: #fff;
+  border-color: var(--gpv-green);
+}
+
+/* ---- Show / Hide Taxonomy segmented toggle ---- */
+
+#toggle-tree-container {
+  display: flex;
+  flex-direction: row;
+  padding: 3px;
+  background: var(--gpv-bg);
+  border: 1px solid var(--gpv-border);
+  border-radius: var(--gpv-radius-pill);
+  gap: 2px;
+}
+
+#toggle-tree-container input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+#toggle-tree-container label {
+  flex: 1;
+  display: block;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gpv-medium);
+  text-align: center;
+  border-radius: var(--gpv-radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background var(--gpv-transition), color var(--gpv-transition), box-shadow var(--gpv-transition);
+}
+
+#toggle-tree-container label:has(input:checked) {
+  background: var(--gpv-green);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: var(--gpv-shadow-sm);
+}
+
+#toggle-tree-container label:not(:has(input:checked)):hover {
+  background: var(--gpv-green-bg);
+  color: var(--gpv-green-dark);
+}
+
+/* File input */
+input[type="file"] {
+  color: var(--gpv-medium);
+  font-size: 11px;
+  width: auto;
+}
+
+/* Minimise toggle */
+div.container .top-block .minimise {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gpv-green-bg);
+  cursor: pointer;
+  transition: background var(--gpv-transition);
+}
+
+div.container .top-block .minimise::after {
+  content: "▾";
+  position: static;
+  color: var(--gpv-green-dark);
+  font-size: 14px;
+  line-height: 1;
+  transition: transform var(--gpv-transition);
+}
+
+div.container .top-block .minimise:hover {
+  background: var(--gpv-green);
+}
+
+div.container .top-block .minimise:hover::after {
+  color: #fff;
+}
+
+div.container .top-block .minimise.on::after {
+  transform: rotate(180deg);
+}
+
+/* ============================================================
+   6. HIERARCHY / GP SELECTOR DROPDOWN
+   ============================================================ */
+
+.selector {
+  width: 100%;
+  max-width: 200px;
+  border: 1px solid var(--gpv-border);
+  border-radius: var(--gpv-radius);
+  color: var(--gpv-medium);
+  background: var(--gpv-surface);
+  font-size: 12px;
+  text-align: left;
+  padding: 4px 24px 4px 8px;
+  margin-bottom: 0;
+  cursor: pointer;
+  position: relative;
+  transition: border-color var(--gpv-transition), box-shadow var(--gpv-transition);
+}
+
+.selector:hover {
+  border-color: var(--gpv-green);
+  box-shadow: 0 0 0 3px rgba(0,148,68,0.10);
+}
+
+.selector::after {
+  content: "▾";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  color: var(--gpv-muted);
+  font-size: 11px;
+}
+
+.selector .current_status {
+  display: inline-block;
+  text-transform: capitalize;
+  color: var(--gpv-dark);
+}
+
+.selector div.options {
+  visibility: hidden;
+  min-width: 320px;
+  background: var(--gpv-surface);
+  color: var(--gpv-dark);
+  padding: 10px 12px;
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  z-index: 100;
+  border: 1px solid var(--gpv-border);
+  border-radius: var(--gpv-radius-lg);
+  box-shadow: var(--gpv-shadow-lg);
+  text-align: left;
+}
+
+.selector:hover div.options {
+  visibility: visible;
+}
+
+.selector a {
+  color: var(--gpv-teal);
+  cursor: pointer;
+  margin-left: 0;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.selector a:hover {
+  color: var(--gpv-teal-dark);
+  text-decoration: underline;
+}
+
+.selector ul {
+  list-style-type: none;
+  margin-top: 8px;
+  padding: 0;
+}
+
+.selector ul li {
+  margin: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--gpv-radius);
+  transition: background var(--gpv-transition);
+}
+
+.selector ul li:hover {
+  background: var(--gpv-green-bg);
+}
+
+/* ============================================================
+   7. LEGENDS PANEL
+   ============================================================ */
+
+.gp-legends {
+  border: 0;
+  border-right: 1px solid var(--gpv-border-light);
+  padding: 12px 16px 14px;
+  min-width: 130px;
+}
+
+.gp-legends > header {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gpv-teal);
+  margin-bottom: 8px;
+}
+
+/*
+ * Legends layout:
+ *   <ul>  → column of rows
+ *   <li>  → flex row: [label | color swatch]
+ *
+ * Label has a fixed width so all three swatches line up vertically.
+ */
+.gp-legends ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+}
+
+.gp-legends ul li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  width: auto;
+  padding: 0;
+  text-align: left;
+}
+
+.gp-legends ul label,
+.gp-legends ul .legend-label {
+  width: 50px;
+  flex-shrink: 0;
+  color: var(--gpv-medium);
+  text-transform: capitalize;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: right;
+  padding-right: 8px;
+}
+
+/* Color swatch — flex so inner text and ::after overlay both centre */
+.gp-legends ul div.color {
+  width: 44px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: var(--gpv-radius);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.10);
+  cursor: pointer;
+  transition: box-shadow var(--gpv-transition), transform var(--gpv-transition);
+}
+
+.gp-legends ul div.color:hover {
+  transform: scale(1.06);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), var(--gpv-shadow-sm);
+}
+
+/* Count number inside the swatch */
+.gp-legends ul div.color > div {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Active filter: ∀ / ∃ / ∄ symbol overlays the swatch, centred */
+.color.filter {
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.10), 0 0 0 2px var(--gpv-green);
+}
+
+.color.filter::after {
+  content: attr(type);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: var(--gpv-radius);
+  pointer-events: none;
+}
+
+/* ============================================================
+   8. GP VALUE COLORS  (override css/gp-style.css)
+   ============================================================ */
+
+.gp-YES {
+  background: var(--gpv-yes);
+}
+
+.gp-NO {
+  background: var(--gpv-no);
+}
+
+.gp-PARTIAL {
+  background: var(--gpv-partial);
+}
+
+/* ============================================================
+   9. SVG GLOBAL TEXT
+   ============================================================ */
+
+text {
+  font-family: var(--gpv-font);
+  font-size: 12px;
+  fill: var(--gpv-dark);
+  text-shadow: none;
+}
+
+text.col_title,
+text.row_title {
+  opacity: 0.65;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+text.col_title:hover,
+text.row_title:hover,
+text.active,
+.node text.active {
+  opacity: 1;
+}
+
+/* ============================================================
+   10. HEATMAP CELL
+   ============================================================ */
+
+.cell:hover {
+  stroke: var(--gpv-green-dark);
+  stroke-width: 2px;
+}
+
+/* ============================================================
+   11. TAXONOMY TREE
+   ============================================================ */
+
+.node circle {
+  fill: var(--gpv-teal);
+  transition: fill var(--gpv-transition);
+}
+
+.node--internal circle {
+  fill: var(--gpv-teal-dark);
+}
+
+g.node.loaded {
+  cursor: ns-resize;
+  opacity: 1;
+}
+
+g.node.loaded:hover .node-type {
+  fill: var(--gpv-surface);
+  cursor: no-drop;
+}
+
+/* Internal node labels (Bacteria, Archaea, Eukaryota, root…):
+   navigation landmarks — keep clearly readable at all times. */
+.node--internal text {
+  text-shadow: none;
+  fill: var(--gpv-dark);
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.72;
+}
+
+.node text {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Species (leaf) labels: subtle at rest so dense trees stay readable,
+   full opacity on hover or when the species is loaded into the heatmap. */
+.node text.label-species {
+  opacity: 0.45;
+  fill: var(--gpv-dark);
+  font-size: 11px;
+  transition: opacity var(--gpv-transition);
+}
+
+.node text.label-species:hover {
+  opacity: 1;
+}
+
+.node:hover text.label-species,
+g.node.loaded text.label-species {
+  opacity: 1;
+  font-weight: 500;
+}
+
+/* Active / highlighted label (column or row title selected) */
+.node text.active {
+  opacity: 1 !important;
+  fill: var(--gpv-green-dark);
+}
+
+/* Tree connecting lines */
+.link {
+  fill: none;
+  stroke: var(--gpv-teal-light);
+  stroke-opacity: 0.6;
+  stroke-width: 1.5px;
+}
+
+/* ============================================================
+   12. TREE RESIZER (width divider)
+   ============================================================ */
+
+/*
+ * The height-sizer line runs the full viewer height and is centered on the
+ * tree/heatmap boundary.  A wide white stroke (matching the SVG surface
+ * colour) paints over the few pixels of content on each side, creating
+ * visible breathing room without changing any JS positions.
+ * On hover the strip turns teal to signal it is draggable.
+ */
+.height-sizer {
+  stroke: var(--gpv-surface);
+  stroke-width: 5px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.height-dragger {
+  cursor: ew-resize;
+  transition: opacity var(--gpv-transition);
+}
+
+.height-dragger:hover .height-sizer {
+  stroke: var(--gpv-teal-light);
+  stroke-width: 10px;
+  opacity: 0.55;
+}
+
+/* The small ||| handle lines stay subtle until hover */
+.height-dragger line:not(.height-sizer) {
+  opacity: 0.35;
+  transition: opacity var(--gpv-transition);
+}
+
+.height-dragger:hover line:not(.height-sizer) {
+  opacity: 1;
+}
+
+/* ============================================================
+   13. TOOLTIP
+   ============================================================ */
+
+div.info-tooltip {
+  position: absolute;
+  border: 1px solid var(--gpv-border);
+  border-left: 3px solid var(--gpv-green);
+  border-radius: var(--gpv-radius-lg);
+  background: var(--gpv-surface);
+  opacity: 1;
+  box-shadow: var(--gpv-shadow-lg);
+  /* visibility is toggled by JS; do not override opacity here */
+  top: 300px;
+  left: 500px;
+  visibility: hidden;
+  font-size: 12px;
+  min-width: 240px;
+  max-width: 360px;
+  overflow: hidden; /* clips header's background flush to border-radius */
+}
+
+/* Optional header injected by draw_tooltip() */
+div.info-tooltip > header {
+  display: block;
+  padding: 7px 14px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gpv-teal);
+  background: var(--gpv-teal-bg);
+  border-bottom: 1px solid var(--gpv-border-light);
+}
+
+/*
+ * Tooltip rows use a CSS table layout:
+ *   .label cell  – shrinks to fit its own content (width: 1% trick)
+ *   .content cell – fills the remaining width
+ *
+ * This handles both multi-word keys ("Property", "Organism") and
+ * single-character quantifier symbols (∀ / ∃ / ∄) from the same
+ * draw_tooltip() call without any fixed pixel column width.
+ */
+div.info-tooltip ul {
+  list-style: none;
+  display: table;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  padding: 6px 14px 10px;
+  margin: 0;
+}
+
+div.info-tooltip ul > li {
+  display: table-row;
+}
+
+div.info-tooltip ul > li .label {
+  display: table-cell;
+  width: 1%;              /* shrink-wraps to the widest label in the set */
+  white-space: nowrap;
+  padding-right: 10px;
+  text-align: right;
+  vertical-align: top;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gpv-medium);
+  padding-top: 1px;
+}
+
+div.info-tooltip ul > li .content {
+  display: table-cell;
+  font-size: 12px;
+  color: var(--gpv-dark);
+  line-height: 1.5;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+/* ============================================================
+   14. MODAL
+   ============================================================ */
+
+.gp-modal {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: var(--gpv-dark);
+  opacity: 0;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+div.gp-modal.gp-modal-active {
+  pointer-events: auto;
+  opacity: 0.45;
+}
+
+.gp-modal-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  max-height: 82vh;
+  width: 82vw;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: var(--gpv-radius-lg);
+}
+
+.gp-modal-content {
+  min-height: 100px;
+  background: var(--gpv-surface);
+  border-radius: var(--gpv-radius-lg);
+  box-shadow: var(--gpv-shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+div.gp-modal-content.gp-modal-active {
+  pointer-events: auto;
+  opacity: 1;
+  padding: 24px;
+}
+
+/* ============================================================
+   15. PROGRESS / UPLOAD PANEL
+   ============================================================ */
+
+.progress-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 8px;
+}
+
+.progress-panel .gauges-panel {
+  text-align: center;
+}
+
+.progress-panel .requests-list {
+  background: #1e2a35;
+  color: #a8e6c0;
+  font-family: var(--gpv-font-mono);
+  font-size: 11px;
+  border-radius: var(--gpv-radius);
+  min-height: 100px;
+  margin: 8px;
+  padding: 8px;
+  line-height: 1.6;
+}
+
+.progress-panel .percentage {
+  text-anchor: middle;
+  font-size: 1.4em;
+  font-weight: 600;
+  fill: var(--gpv-green);
+  stroke: none;
+}
+
+.progress-panel .label {
+  text-anchor: middle;
+  font-size: 0.78em;
+  fill: var(--gpv-medium);
+  stroke-width: 0;
+}
+
+circle.gauge-bg {
+  fill: transparent;
+  stroke: var(--gpv-border);
+  stroke-width: 1px;
+}
+
+circle.gauge-val {
+  fill: transparent;
+  stroke: var(--gpv-green);
+  stroke-width: 3px;
+}
+
+.gauge-val.uncertain {
+  animation: gpv-bounce 1.2s ease infinite;
+}
+
+@keyframes gpv-bounce {
+  0%   { stroke-dashoffset: 120; opacity: 0.45; }
+  50%  { stroke-dashoffset: 130; opacity: 1; }
+  100% { stroke-dashoffset: 120; opacity: 0.45; }
+}
+
+/* ============================================================
+   16. STEP POPUP (per-step details squares)
+   ============================================================ */
+
+.step-popup {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--gpv-border);
+  border-radius: 3px;
+  margin-left: calc(50% - 10px);
+}
+
+.step-popup.passed {
+  background: rgba(0, 148, 68, 0.25);
+  border-color: rgba(0, 148, 68, 0.5);
+}
+
+.step-popup.failed {
+  background: rgba(180, 190, 196, 0.25);
+}
+
+/* ============================================================
+   17. STEP DETAILS BUTTON (expand/collapse columns)
+   ============================================================ */
+
+.step-details-button,
+.step-details-button path,
+.step-details-button circle {
+  cursor: pointer;
+}
+
+.step-details-button circle {
+  fill: rgba(0, 124, 130, 0.15);
+  transition: fill var(--gpv-transition);
+}
+
+.step-details-button:hover circle {
+  fill: rgba(0, 124, 130, 0.6);
+}
+
+/* ============================================================
+   18. SCROLLBAR (SVG)
+   ============================================================ */
+
+.gpv-scrollbar rect.gpv-scrollbar-bg {
+  fill: rgba(44, 62, 80, 0.08);
+  stroke: rgba(44, 62, 80, 0.15);
+  rx: 4;
+}
+
+.gpv-scrollbar rect.gpv-scrollbar-handle {
+  fill: rgba(0, 124, 130, 0.5);
+  cursor: ns-resize;
+  transition: fill var(--gpv-transition);
+}
+
+.gpv-scrollbar rect.gpv-scrollbar-handle:hover {
+  fill: rgba(0, 124, 130, 0.8);
+}
+
+/* ============================================================
+   19. ZOOMER & SORTER (SVG controls)
+   ============================================================ */
+
+.gpv-zoomer circle,
+.gpv-sorter circle {
+  fill: var(--gpv-surface);
+  stroke: var(--gpv-border);
+  stroke-width: 1.5;
+  opacity: 0.85;
+  cursor: pointer;
+  transition: fill var(--gpv-transition), stroke var(--gpv-transition), opacity var(--gpv-transition);
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.10));
+}
+
+.gpv-zoomer circle:hover,
+.gpv-sorter circle:hover {
+  fill: var(--gpv-green-bg);
+  stroke: var(--gpv-green);
+  opacity: 1;
+}
+
+.gpv-zoomer text,
+.gpv-sorter text {
+  text-anchor: middle;
+  alignment-baseline: central;
+  fill: var(--gpv-medium);
+  font-weight: 600;
+  opacity: 0.85;
+  cursor: pointer;
+  pointer-events: none;
+  user-select: none;
+}
+
+.gpv-sorter line.bar {
+  pointer-events: none;
+  stroke: var(--gpv-medium);
+  stroke-width: 2;
+}
+
+/* ============================================================
+   20. LEGEND VALUE (SVG)
+   ============================================================ */
+
+.legend_value {
+  text-shadow: none;
+  font-size: 11px;
+  fill: var(--gpv-medium);
+}
+
+/* ============================================================
+   21. STEP TOGGLER (expand individual GP steps)
+   ============================================================ */
+
+.step-toggler circle,
+.step-toggler path {
+  cursor: zoom-in;
+  fill: rgba(0, 148, 68, 0.15);
+  transition: fill var(--gpv-transition);
+}
+
+.step-toggler:hover circle,
+.step-toggler:hover path {
+  fill: rgba(0, 148, 68, 0.45);
+}
+
+.step-toggler.expanded circle,
+.step-toggler.expanded path {
+  cursor: zoom-out;
+}
+
+/* ============================================================
+   22. AUTOCOMPLETE DROPDOWN
+   ============================================================ */
+
+.autocomplete-suggestions {
+  text-align: left;
+  cursor: default;
+  border: 1px solid var(--gpv-border);
+  border-top: 0;
+  background: var(--gpv-surface);
+  border-radius: 0 0 var(--gpv-radius-lg) var(--gpv-radius-lg);
+  box-shadow: var(--gpv-shadow);
+  position: absolute;
+  display: none;
+  z-index: 9999;
+  max-height: 260px;
+  overflow: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.autocomplete-suggestion {
+  position: relative;
+  padding: 5px 10px;
+  line-height: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: var(--gpv-dark);
+  transition: background var(--gpv-transition);
+}
+
+.autocomplete-suggestion b {
+  font-weight: 600;
+  color: var(--gpv-green);
+}
+
+.autocomplete-suggestion.selected {
+  background: var(--gpv-green-bg);
+}
+
+/* ============================================================
+   23. LOADING ANIMATION
+   ============================================================ */
+
+.loading {
+  animation: gpv-loading 1.8s ease infinite;
+  display: inline-block;
+  font-size: 1.1em;
+  color: var(--gpv-green);
+}
+
+@keyframes gpv-loading {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* ============================================================
+   24. VIEWER AREA
+   ============================================================ */
+
+div.container > div#gp-viewer {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--gpv-surface);
+}
+
+/* ============================================================
+   25. SCROLLBAR (native browser, for overflow areas)
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gpv-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gpv-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gpv-muted);
+}
+
+/* ============================================================
+   26. RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+
+@media (max-width: 800px) {
+  div.container > h1 {
+    font-size: 1rem;
+    padding: 10px 16px;
+  }
+
+  .top-controllers {
+    flex-direction: column;
+  }
+
+  .top-controllers > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--gpv-border-light);
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   27. DARK MODE TOKENS
+   Applies when:
+     (a) the OS prefers dark AND the user hasn't overridden to light
+     (b) the user has explicitly chosen dark via [data-theme="dark"]
+   ============================================================ */
+
+/* --- shared override block (DRY via custom property re-declarations) --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --gpv-bg:             #0e1419;
+    --gpv-surface:        #19232d;
+    --gpv-surface-alt:    #1f2d38;
+    --gpv-dark:           #dce4ea;
+    --gpv-medium:         #8fa4b0;
+    --gpv-muted:          #6b8290;
+    --gpv-border:         #2c3d4c;
+    --gpv-border-light:   #243240;
+    --gpv-green-bg:       #0c2217;
+    --gpv-teal-bg:        #0a1e20;
+    --gpv-no:             #3d4f5b;
+    --gpv-shadow-sm:      0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.22);
+    --gpv-shadow:         0 2px 8px rgba(0,0,0,0.40), 0 1px 3px rgba(0,0,0,0.28);
+    --gpv-shadow-lg:      0 8px 24px rgba(0,0,0,0.48), 0 2px 8px rgba(0,0,0,0.32);
+  }
+}
+
+[data-theme="dark"] {
+  --gpv-bg:             #0e1419;
+  --gpv-surface:        #19232d;
+  --gpv-surface-alt:    #1f2d38;
+  --gpv-dark:           #dce4ea;
+  --gpv-medium:         #8fa4b0;
+  --gpv-muted:          #6b8290;
+  --gpv-border:         #2c3d4c;
+  --gpv-border-light:   #243240;
+  --gpv-green-bg:       #0c2217;
+  --gpv-teal-bg:        #0a1e20;
+  --gpv-no:             #3d4f5b;
+  --gpv-shadow-sm:      0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.22);
+  --gpv-shadow:         0 2px 8px rgba(0,0,0,0.40), 0 1px 3px rgba(0,0,0,0.28);
+  --gpv-shadow-lg:      0 8px 24px rgba(0,0,0,0.48), 0 2px 8px rgba(0,0,0,0.32);
+}
+
+/* Override the SVG gradient stop colours so the fade masks match the dark
+   surface.  D3 sets stop-color as a presentation attribute; CSS overrides it. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) stop {
+    stop-color: #19232d;
+  }
+}
+
+[data-theme="dark"] stop {
+  stop-color: var(--gpv-surface);
+}
+
+/* gp-style.css sets `text-shadow: 0 0 3px white` on card headers and SVG
+   text elements.  The SVG rule is already cleared in section 10 above.
+   The HTML header rule must be explicitly cancelled in dark mode. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) header {
+    text-shadow: none;
+  }
+}
+
+[data-theme="dark"] header {
+  text-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) div.info-tooltip ul > li .content {
+    color: var(--gpv-surface);
+  }
+}
+
+[data-theme="dark"] div.info-tooltip ul > li .content {
+  color: var(--gpv-surface);
+}
+
+/* ============================================================
+   28. THEME TOGGLE BUTTON
+   ============================================================ */
+
+#theme-toggle {
+  position: absolute;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--gpv-transition);
+  flex-shrink: 0;
+}
+
+#theme-toggle:hover {
+  background: rgba(255,255,255,0.30);
+}
