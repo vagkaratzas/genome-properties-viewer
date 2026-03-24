@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **ERZ step-level data pipeline**: new script `scripts/create-erz-steps.py` reads `*.micro` SQLite databases (one per ERZ sample, produced by genome-properties-calc) and outputs `ERZ_STEPS.json` — a map of passing step numbers per ERZ sample per property (`{ erzCode: { GenPropXXXX: [stepNums] } }`). DB encoding: `numeric_assignment` 0=YES, 1=PARTIAL, 2=NO; only rows present in `step_assignments` represent passing steps. Run via `npm run create-erz-steps`.
+- **`create-erz-merged.js`** extended to consume `ERZ_STEPS.json`: when the file is present, individual step pass/fail is set from the real step numbers rather than derived from the property-level result. Falls back to the previous behaviour (YES→1, else→0) when no step file is found. New optional CLI args: `[stepsPath]` (4th) and `[outputPath]` (5th, previously 4th).
 - **Browser smoke tests** (Playwright): 8 end-to-end tests in `tests/smoke.spec.js` covering page load, taxonomy tree rendering and expansion, species activation, zoom in/out, and step-column expansion. A minimal static file server (`tests/serve.js`) and a test harness page (`tests/index.html`) serve the built bundle and test-data fixtures. Run with `npm run test:e2e`.
   - `playwright.config.js`: Playwright configuration (single Chromium project, headless, local webServer on port 4321).
   - `playwright-report/` and `test-results/` added to `.gitignore`.

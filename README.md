@@ -58,6 +58,37 @@ npm outdated
 > transitive dependency. The suggested fix would downgrade browser-sync to v1.9.2 (far
 > worse). They are accepted as browser-sync is a local-only dev server, never deployed.
 
+### ERZ Data Pipeline
+
+ERZ mode displays metagenome assembly results from ENA. Input files live in `test-files/ERZ/`.
+
+**Input files** (one per ERZ sample):
+- `{ERZ_CODE}_FASTA_gp.csv` — property-level results (YES / PARTIAL / NO)
+- `{ERZ_CODE}.micro` — SQLite database with step-level data (optional, from genome-properties-calc)
+
+**Build the merged JSON files:**
+
+```bash
+# 1. Extract per-step pass/fail from *.micro SQLite databases → ERZ_STEPS.json
+#    Requires Python 3 (uses the built-in sqlite3 module — no extra dependencies)
+npm run create-erz-steps
+
+# 2. Build ERZ_MERGED.json consumed by the viewer
+#    Uses ERZ_STEPS.json for real step data if present; falls back to property-level assignment
+npm run create-erz-merged
+```
+
+Both commands accept optional path arguments if your files live elsewhere:
+
+```bash
+python3 scripts/create-erz-steps.py  [microDir]  [outputPath]
+node    scripts/create-erz-merged.js [erzDir] [jsonMergedPath] [stepsPath] [outputPath]
+```
+
+> **Step data note:** Without a `.micro` file for a given ERZ sample, step values fall back to
+> all-pass (1) for YES properties and all-fail (0) for PARTIAL/NO properties, since the CSV files
+> contain only property-level results.
+
 ## API Reference
 
 The code API reference is under construction and its current state is available in [reference.md](./reference.md)

@@ -17,6 +17,7 @@
     "prettier": "prettier --write src/*",
     "prepare": "husky",
     "jsdoc": "jsdoc2md src/*.js > reference.md",
+    "create-erz-steps": "python3 scripts/create-erz-steps.py",
     "create-erz-merged": "node scripts/create-erz-merged.js"
   },
   "repository": {

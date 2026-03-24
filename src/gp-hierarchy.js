@@ -90,8 +90,11 @@ class GenomePropertiesHierarchy {
    * @return {Array} Array of ids of the top level properties.
    */
   get_top_level_gp_by_id(id) {
-    if (id in this.nodes)
-      return [...this.get_top_level_gp(this.nodes[id])].map((d) => d.id);
+    if (id in this.nodes) {
+      const result = this.get_top_level_gp(this.nodes[id]);
+      if (result === null) return null; // id is the hierarchy root itself
+      return [...result].map((d) => d.id);
+    }
     return [];
   }
 

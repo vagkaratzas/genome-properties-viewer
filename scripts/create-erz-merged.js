@@ -7,11 +7,12 @@
  * Generates ERZ_MERGED.json — a JSON_MERGED-equivalent file for ERZ samples.
  *
  * Usage:
- *   node scripts/create-erz-merged.js [erzDir] [jsonMergedPath] [outputPath]
+ *   node scripts/create-erz-merged.js [erzDir] [jsonMergedPath] [stepsPath] [outputPath]
  *
  * Defaults:
  *   erzDir        = test-files/ERZ
  *   jsonMergedPath = test-files/JSON_MERGED
+ *   stepsPath     = test-files/ERZ/ERZ_STEPS.json  (optional — used if the file exists)
  *   outputPath    = test-files/ERZ/ERZ_MERGED.json
  *
  * Output format mirrors JSON_MERGED:
@@ -19,8 +20,10 @@
  *                       steps: [{ step, step_name, required, values: { erzCode: 0|1 } }] } }
  *
  * Step names and required flags come from JSON_MERGED (the authoritative schema).
- * Step pass/fail is derived from the property-level result (YES → 1, NO/PARTIAL → 0),
- * since ERZ CSV files do not contain step-level data.
+ * Step pass/fail is taken from ERZ_STEPS.json when available (produced by
+ * create-erz-steps.py from *.micro SQLite databases).  Without that file the
+ * script falls back to deriving step values from the property-level result
+ * (YES → 1, NO/PARTIAL → 0).
  */
 
 const fs = require("fs");
@@ -28,8 +31,10 @@ const path = require("path");
 
 const erzDir = process.argv[2] || "test-files/ERZ";
 const mergedPath = process.argv[3] || "test-files/JSON_MERGED";
+const stepsPath =
+  process.argv[4] || path.join(erzDir, "ERZ_STEPS.json");
 const outputPath =
-  process.argv[4] || path.join(erzDir, "ERZ_MERGED.json");
+  process.argv[5] || path.join(erzDir, "ERZ_MERGED.json");
 
 // --- Load schema from JSON_MERGED ---
 if (!fs.existsSync(mergedPath)) {
@@ -37,6 +42,17 @@ if (!fs.existsSync(mergedPath)) {
   process.exit(1);
 }
 const schema = JSON.parse(fs.readFileSync(mergedPath, "utf8"));
+
+// --- Load step data from ERZ_STEPS.json (optional) ---
+let stepsData = null;
+if (fs.existsSync(stepsPath)) {
+  stepsData = JSON.parse(fs.readFileSync(stepsPath, "utf8"));
+  console.log(`Loaded step data from: ${stepsPath}`);
+} else {
+  console.warn(
+    `No ERZ_STEPS.json found at ${stepsPath} — falling back to property-level step assignment.`
+  );
+}
 
 // --- Discover ERZ CSV files ---
 const csvFiles = fs
@@ -111,11 +127,17 @@ for (const csvFile of csvFiles) {
     result[gpId].values[erzCode] = value;
     result[gpId].values.TOTAL[value]++;
 
-    // Step values: YES → all pass (1), NO/PARTIAL → all fail (0)
-    // ERZ CSV files contain only property-level results, not step-level data.
-    const stepPassed = value === "YES" ? 1 : 0;
+    // Resolve step values from ERZ_STEPS.json when available; fall back to
+    // deriving all steps from the property-level result (YES → 1, else → 0).
+    const passingSteps = stepsData && stepsData[erzCode] && stepsData[erzCode][gpId];
+    const fallbackPassed = value === "YES" ? 1 : 0;
+
     result[gpId].steps.forEach((step) => {
-      step.values[erzCode] = stepPassed;
+      if (passingSteps) {
+        step.values[erzCode] = passingSteps.includes(Number(step.step)) ? 1 : 0;
+      } else {
+        step.values[erzCode] = fallbackPassed;
+      }
     });
   }
 }
