@@ -23,6 +23,7 @@ export default class GenomePropertiesTaxonomy {
     this.svg = null;
     this.collapse_tree = true;
     this.show_tree = show_tree;
+    this._filter_to_loaded_only = false;
     this.dispatcher = d3.dispatch(
       "changeOrder",
       "speciesRequested",
@@ -210,6 +211,9 @@ export default class GenomePropertiesTaxonomy {
       }
     });
     if (this.show_tree) {
+      if (this._filter_to_loaded_only) {
+        return this._prune_to_opu(this.root) || { ...this.root, children: [] };
+      }
       return this.root;
     }
     return {
@@ -226,6 +230,35 @@ export default class GenomePropertiesTaxonomy {
     };
   }
 
+  // Returns a shallow-copied subtree containing only branches that lead to
+  // OPU organism nodes (isFromFile), regardless of their loaded state.
+  // Sets number_of_leaves on internal nodes to the count of OPU leaves below.
+  _prune_to_opu(node) {
+    if (!node.children || node.children.length === 0) {
+      return node.isFromFile ? node : null;
+    }
+    const kept = node.children
+      .map((c) => this._prune_to_opu(c))
+      .filter((c) => c !== null);
+    if (kept.length === 0) return null;
+    const opu_count = kept.reduce(
+      (sum, c) => sum + (c.isFromFile ? 1 : c._opu_count || 0),
+      0,
+    );
+    return {
+      ...node,
+      children: kept,
+      number_of_leaves: opu_count,
+      _opu_count: opu_count,
+    };
+  }
+
+  // When enable is true, the tree only shows branches containing loaded organisms.
+  // Pass false to restore the full tree (call on mode exit).
+  filter_to_taxids(enable) {
+    this._filter_to_loaded_only = !!enable;
+  }
+
   update_tree(time = 0, cell_side = null) {
     if (this.root === null) return;
     if (cell_side !== null) this.cell_side = cell_side;
@@ -233,7 +266,8 @@ export default class GenomePropertiesTaxonomy {
 
     const root = d3.hierarchy(this.get_tree_to_show());
 
-    if (this.show_tree && this.collapse_tree) this.prune_inner_nodes(root);
+    if (this.show_tree && this.collapse_tree && !this._filter_to_loaded_only)
+      this.prune_inner_nodes(root);
     else
       root.descendants().forEach((e) => {
         e.label = e.data.name || e.data.taxid;
@@ -241,7 +275,10 @@ export default class GenomePropertiesTaxonomy {
 
     root
       .leaves()
-      .filter((d) => d.data.loaded)
+      .filter(
+        (d) =>
+          d.data.loaded || (this._filter_to_loaded_only && d.data.isFromFile),
+      )
       .forEach((d) => this.mark_branch_for_loaded_leaves(d));
     this.filter_collapsed_nodes(root);
     root.sort((a) => (a.has_loaded_leaves ? -1 : 1));
@@ -295,6 +332,7 @@ export default class GenomePropertiesTaxonomy {
       .filter(
         (d) =>
           d.data.expanded ||
+          !d.parent ||
           d.parent.data.expanded ||
           d.parent.has_loaded_leaves,
       );
@@ -364,8 +402,13 @@ export default class GenomePropertiesTaxonomy {
   remove_organism_loaded(tax_id, isFromFile) {
     this.nodes[tax_id].loaded = false;
     if (isFromFile) {
+      // OPU organisms are repositioned under a taxonomic parent by
+      // place_opu_organism — they are NOT in root.children.  Just toggling
+      // loaded=false is enough; the node must stay so re-enabling restores
+      // it in the correct tree position without needing place_opu_organism again.
+      if (this.nodes[tax_id]._opu_parent_taxid) return;
       const i = this.root.children.indexOf(this.nodes[tax_id]);
-      this.root.children.splice(i, 1);
+      if (i !== -1) this.root.children.splice(i, 1);
       delete this.nodes[tax_id];
     }
   }

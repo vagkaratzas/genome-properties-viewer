@@ -162,6 +162,11 @@
             .property("checked", function(d) { return selectedERZ.has(d); });
     };
 
+    viewer.opu_change_callback = function(organisms) {
+        d3.select("#opu-list").selectAll("input[type=checkbox]")
+            .property("checked", function(d) { return organisms.indexOf(d) !== -1; });
+    };
+
     d3.selectAll('input[name="viewer-mode"]').on("change", function() {
         // Hide all mode-specific panels first
         d3.select("#taxonomy-panel").style("display", "none");

@@ -81,6 +81,7 @@ export default class GenomePropertiesViewer {
     this.opu_mode = false;
     this._taxonomy_state = null;
     this.erz_change_callback = null;
+    this.opu_change_callback = null;
 
     this.modal = new GPModal(element_selector);
     this.fileGetter = new FileGetter({ viewer: this });
@@ -605,6 +606,8 @@ export default class GenomePropertiesViewer {
     if (!this.skip_scroll_refreshing) updateScrollBars(this, visible_cols, dx);
     if (this.erz_mode && this.erz_change_callback)
       this.erz_change_callback(this.organisms);
+    if (this.opu_mode && this.opu_change_callback)
+      this.opu_change_callback(this.organisms);
   }
 
   update_col(gp, i, c) {
@@ -904,6 +907,7 @@ export default class GenomePropertiesViewer {
       }
     }
 
+    this.gp_taxonomy.filter_to_taxids(true);
     this.update_viewer(0);
   }
 
@@ -922,6 +926,7 @@ export default class GenomePropertiesViewer {
     this._taxonomy_state = null;
     this.opu_mode = false;
     this.gp_taxonomy.show_tree = true;
+    this.gp_taxonomy.filter_to_taxids(false);
     this.update_viewer(0);
   }
 
