@@ -5,7 +5,7 @@
  * create-opu-merged.js
  *
  * Generates OPU_MERGED.json — a JSON_MERGED-equivalent file for
- * (ERZ study, predicted taxon) pairs derived from OPU assignments.
+ * predicted taxa derived from OPU assignments.
  *
  * Usage:
  *   node scripts/create-opu-merged.js [opuDir] [jsonMergedPath] [pairsPath] [stepsPath] [outputPath]
@@ -17,11 +17,11 @@
  *   stepsPath     = test-files/OPU/OPU_STEPS.json   (optional — used if present)
  *   outputPath    = test-files/OPU/OPU_MERGED.json
  *
- * CSV file naming convention (produced by the GP pipeline after split-ips-by-taxon.py):
- *   {erz_code}_{sanitized_taxon}_FASTA_gp.csv
+ * CSV file naming convention (produced by the GP pipeline after extract-taxon-ips.py):
+ *   {sanitized_taxon}_FASTA_gp.csv
  *
- * Output organism keys use the original (unsanitized) taxon name joined with '::':
- *   "ERZ841404::Polaribacter"
+ * Output organism keys are the original (unsanitized) taxon name:
+ *   "Polaribacter"
  *
  * Output format mirrors ERZ_MERGED.json / JSON_MERGED:
  *   {
@@ -29,10 +29,10 @@
  *       property: "GenPropXXXX",
  *       name: "...",
  *       values: {
- *         "ERZ841404::Polaribacter": "YES"|"NO"|"PARTIAL",
+ *         "Polaribacter": "YES"|"NO"|"PARTIAL",
  *         TOTAL: { YES: N, NO: N, PARTIAL: N }
  *       },
- *       steps: [{ step, step_name, required, values: { "ERZ841404::Polaribacter": 0|1 } }]
+ *       steps: [{ step, step_name, required, values: { "Polaribacter": 0|1 } }]
  *     }
  *   }
  *
@@ -57,39 +57,37 @@ if (!fs.existsSync(mergedPath)) {
 }
 const schema = JSON.parse(fs.readFileSync(mergedPath, "utf8"));
 
-// --- Load opu_selected_pairs.tsv to map sanitized stem → organism key ---
+// --- Load opu_selected_pairs.tsv to map sanitized_taxon → original taxon name ---
 if (!fs.existsSync(pairsPath)) {
   console.error(`opu_selected_pairs.tsv not found at: ${pairsPath}`);
   console.error("Run analyze-opu-data.py first.");
   process.exit(1);
 }
 
-// stemToKey: "ERZ841404_Polaribacter" → "ERZ841404::Polaribacter"
+// stemToKey: "Polaribacter" (sanitized) → "Polaribacter" (original taxon name)
 const stemToKey = {};
 const pairsText = fs.readFileSync(pairsPath, "utf8");
 const pairsLines = pairsText.trim().split("\n");
 const pairsHeader = pairsLines[0].split("\t");
 const colIdx = (name) => pairsHeader.indexOf(name);
-const erzIdx = colIdx("erz_code");
 const taxonIdx = colIdx("taxon");
 const sanIdx = colIdx("sanitized_taxon");
 
-if (erzIdx === -1 || taxonIdx === -1 || sanIdx === -1) {
-  console.error("opu_selected_pairs.tsv is missing expected columns (erz_code, taxon, sanitized_taxon)");
+if (taxonIdx === -1 || sanIdx === -1) {
+  console.error("opu_selected_pairs.tsv is missing expected columns (taxon, sanitized_taxon)");
   process.exit(1);
 }
 
 for (let i = 1; i < pairsLines.length; i++) {
   const cols = pairsLines[i].split("\t");
-  if (cols.length < 3) continue;
-  const erz = cols[erzIdx].trim();
+  if (cols.length < 2) continue;
   const taxon = cols[taxonIdx].trim();
   const san = cols[sanIdx].trim();
-  const stem = `${erz}_${san}`;
-  stemToKey[stem] = `${erz}::${taxon}`;
+  // Multiple ERZ rows may share the same taxon/sanitized_taxon — deduplicate
+  if (san && taxon) stemToKey[san] = taxon;
 }
 
-console.log(`Loaded ${Object.keys(stemToKey).length} pair mappings from: ${pairsPath}`);
+console.log(`Loaded ${Object.keys(stemToKey).length} taxon mappings from: ${pairsPath}`);
 
 // --- Load step data from OPU_STEPS.json (optional) ---
 let stepsData = null;

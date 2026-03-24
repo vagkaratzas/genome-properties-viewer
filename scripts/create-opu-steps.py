@@ -2,10 +2,10 @@
 """
 create-opu-steps.py
 
-Reads a directory of *.micro SQLite databases — one per (ERZ, taxon) pair,
-produced by the GP property-assignment pipeline run on sub-IPS files — and
-outputs OPU_STEPS.json: a mapping of passing step numbers per organism per
-property.
+Reads a directory of *.micro SQLite databases — one per selected taxon,
+produced by the GP property-assignment pipeline run on per-taxon IPS files
+(from extract-taxon-ips.py) — and outputs OPU_STEPS.json: a mapping of
+passing step numbers per organism per property.
 
 Usage:
   python3 scripts/create-opu-steps.py [microDir] [pairsFile] [outputPath]
@@ -15,16 +15,15 @@ Defaults:
   pairsFile  = test-files/OPU/opu_selected_pairs.tsv
   outputPath = test-files/OPU/OPU_STEPS.json
 
-*.micro file naming convention (must match split-ips-by-taxon.py output):
-  {erz_code}_{sanitized_taxon}.micro
+*.micro file naming convention (must match extract-taxon-ips.py output):
+  {sanitized_taxon}.micro
 
-The organism key in the output JSON uses the original (unsanitized) taxon name,
-joined with '::':
-  "ERZ841404::Polaribacter"
+The organism key in the output JSON is the original (unsanitized) taxon name:
+  "Polaribacter"
 
 Output format (identical schema to ERZ_STEPS.json):
   {
-    "ERZ841404::Polaribacter": {
+    "Polaribacter": {
       "GenProp0017": [1, 2, 3, 5],   <-- step numbers that PASSED
       "GenProp0029": [9]
     },
@@ -63,17 +62,15 @@ QUERY = """
 
 def load_pairs(pairs_path):
     """
-    Return dict: sanitized_taxon key → (erz_code, taxon) for each row
-    in opu_selected_pairs.tsv.
-    The .micro filename stem is '{erz_code}_{sanitized_taxon}', so we need
-    to map back to the organism key '{erz_code}::{taxon}'.
+    Return dict: sanitized_taxon → taxon for each row in opu_selected_pairs.tsv.
+    The .micro filename stem is '{sanitized_taxon}', and the organism key
+    in the output JSON is the original (unsanitized) taxon name.
     """
     pairs = {}
     with open(pairs_path, newline="", encoding="utf-8") as fh:
         reader = csv.DictReader(fh, delimiter="\t")
         for row in reader:
-            stem = f"{row['erz_code']}_{row['sanitized_taxon']}"
-            pairs[stem] = (row["erz_code"], row["taxon"])
+            pairs[row["sanitized_taxon"]] = row["taxon"]
     return pairs
 
 
@@ -103,8 +100,7 @@ for micro_file in micro_files:
         print(f"  Skipping {micro_file} (not in opu_selected_pairs.tsv)")
         continue
 
-    erz_code, taxon = stem_to_key[stem]
-    organism_key = f"{erz_code}::{taxon}"
+    organism_key = stem_to_key[stem]
     db_path = os.path.join(micro_dir, micro_file)
 
     con = sqlite3.connect(db_path)

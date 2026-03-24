@@ -2,26 +2,33 @@
 """
 analyze-opu-data.py
 
-Parse the OPU TSV (~500K rows) and produce a ranked table of
-(ERZ study, predicted taxon) pairs to help select 10-20 representative
-pairs for OPU mode.
+Parse the OPU TSV (~500K rows), aggregate metrics by predicted taxon (across
+all ERZ studies), rank taxa by your chosen criterion, and output the (ERZ,
+taxon) pairs for the top N taxa.
 
 Usage:
   python3 scripts/analyze-opu-data.py <opu_tsv> [--top N]
-                                       [--rank-by proteins|OPUs]
+                                       [--rank-by proteins|OPUs|studies|KEGG|KEGG_coverage]
                                        [--output-dir DIR]
 
 Defaults:
-  --top        20
+  --top        10
   --rank-by    proteins
   --output-dir test-files/OPU
 
+Ranking criteria (all computed per taxon, summed across ERZ studies):
+  proteins      — total protein count (most data overall)
+  OPUs          — distinct OPU cluster count (broadest functional range)
+  studies       — number of ERZ studies the taxon appears in (most prevalent)
+  KEGG          — distinct KEGG KO count (richest metabolic annotation)
+  KEGG_coverage — fraction of proteins with a non-UNKNOWN KO (best quality)
+
 Outputs:
-  <output-dir>/opu_selected_pairs.tsv  — ranked pairs (edit to trim)
-  <output-dir>/opu_taxon_names.txt     — all unique taxon names
+  <output-dir>/opu_selected_pairs.tsv  — all (ERZ, taxon) pairs for top taxa
+  <output-dir>/opu_taxon_names.txt     — unique taxon names from the FULL data
 
 Edit opu_selected_pairs.tsv to keep only the pairs you want, then run
-split-ips-by-taxon.py.
+resolve-opu-taxa.py and split-ips-by-taxon.py.
 
 Expected TSV columns (tab-separated, with header row):
   seqname  OPU  originalname  KEGG_ko  Predicted taxonomic group  match_id
@@ -49,11 +56,18 @@ def extract_erz_code(seqname):
 
 
 def sanitize_name(name):
-    """
-    Produce a filesystem-safe version of a taxon name.
-    Spaces and most punctuation → underscore; alphanumerics and - . kept.
-    """
+    """Produce a filesystem-safe version of a taxon name."""
     return "".join(c if c.isalnum() or c in "-." else "_" for c in name)
+
+
+def parse_kegg(kegg_field):
+    """
+    Return the set of distinct KO identifiers from a KEGG_ko field.
+    Handles comma-separated values ("ko:K03296,ko:K18138") and "UNKNOWN".
+    """
+    if not kegg_field or kegg_field.strip() == "UNKNOWN":
+        return set()
+    return {k.strip() for k in kegg_field.split(",") if k.strip()}
 
 
 def main():
@@ -65,15 +79,22 @@ def main():
     parser.add_argument(
         "--top",
         type=int,
-        default=20,
+        default=10,
         metavar="N",
-        help="Number of top pairs to write to opu_selected_pairs.tsv (default: 20)",
+        help="Number of top taxa to select (default: 10)",
     )
     parser.add_argument(
         "--rank-by",
-        choices=["proteins", "OPUs"],
+        choices=["proteins", "OPUs", "studies", "KEGG", "KEGG_coverage"],
         default="proteins",
-        help="Rank by protein count or distinct-OPU count (default: proteins)",
+        help=(
+            "Ranking criterion (default: proteins):\n"
+            "  proteins      — total protein count\n"
+            "  OPUs          — distinct OPU cluster count\n"
+            "  studies       — number of ERZ studies containing the taxon\n"
+            "  KEGG          — distinct KEGG KO count\n"
+            "  KEGG_coverage — fraction of proteins with a known KO"
+        ),
     )
     parser.add_argument(
         "--output-dir",
@@ -88,8 +109,11 @@ def main():
 
     os.makedirs(args.output_dir, exist_ok=True)
 
-    protein_counts = defaultdict(int)   # (erz, taxon) → n_proteins
-    opu_sets = defaultdict(set)         # (erz, taxon) → {OPU, ...}
+    # Per-(erz, taxon) pair accumulators
+    pair_proteins = defaultdict(int)        # (erz, taxon) → protein count
+    pair_opu_sets = defaultdict(set)        # (erz, taxon) → {OPU, ...}
+    pair_kegg_sets = defaultdict(set)       # (erz, taxon) → {KO, ...}
+    pair_kegg_annotated = defaultdict(int)  # (erz, taxon) → proteins with KO
 
     print(f"Reading {args.opu_tsv} …")
     total_rows = 0
@@ -105,75 +129,130 @@ def main():
                 continue
             erz = extract_erz_code(row["seqname"].strip())
             opu = row["OPU"].strip()
+            kegg = parse_kegg(row.get("KEGG_ko", ""))
             key = (erz, taxon)
-            protein_counts[key] += 1
-            opu_sets[key].add(opu)
+            pair_proteins[key] += 1
+            pair_opu_sets[key].add(opu)
+            pair_kegg_sets[key].update(kegg)
+            if kegg:
+                pair_kegg_annotated[key] += 1
 
-    print(f"  Total rows         : {total_rows:>10,}")
-    print(f"  Skipped (UNKNOWN)  : {skipped_unknown:>10,}")
-    print(f"  Distinct (ERZ, taxon) pairs: {len(protein_counts):,}")
+    print(f"  Total rows              : {total_rows:>10,}")
+    print(f"  Skipped (UNKNOWN taxon) : {skipped_unknown:>10,}")
+    print(f"  Distinct (ERZ, taxon) pairs: {len(pair_proteins):,}")
 
-    # Build sorted list
-    rank_field = "n_proteins" if args.rank_by == "proteins" else "n_OPUs"
-    pairs = sorted(
+    # ── Aggregate per-taxon metrics across all ERZ studies ──────────────────
+    taxon_proteins = defaultdict(int)    # taxon → total proteins
+    taxon_opu_sets = defaultdict(set)    # taxon → distinct OPUs (global)
+    taxon_erz_sets = defaultdict(set)    # taxon → distinct ERZ studies
+    taxon_kegg_sets = defaultdict(set)   # taxon → distinct KOs (global)
+    taxon_kegg_ann = defaultdict(int)    # taxon → proteins with KO
+
+    for (erz, taxon), n in pair_proteins.items():
+        taxon_proteins[taxon] += n
+        taxon_opu_sets[taxon].update(pair_opu_sets[(erz, taxon)])
+        taxon_erz_sets[taxon].add(erz)
+        taxon_kegg_sets[taxon].update(pair_kegg_sets[(erz, taxon)])
+        taxon_kegg_ann[taxon] += pair_kegg_annotated[(erz, taxon)]
+
+    all_taxa_names = sorted(taxon_proteins.keys())
+    print(f"  Distinct taxa           : {len(all_taxa_names):,}")
+
+    # ── Build per-taxon summary rows ─────────────────────────────────────────
+    def kegg_cov(t):
+        n = taxon_proteins[t]
+        return taxon_kegg_ann[t] / n if n else 0.0
+
+    RANK_KEYS = {
+        "proteins":      lambda t: taxon_proteins[t],
+        "OPUs":          lambda t: len(taxon_opu_sets[t]),
+        "studies":       lambda t: len(taxon_erz_sets[t]),
+        "KEGG":          lambda t: len(taxon_kegg_sets[t]),
+        "KEGG_coverage": kegg_cov,
+    }
+    rank_fn = RANK_KEYS[args.rank_by]
+
+    taxa_rows = sorted(
         [
             {
-                "erz_code": k[0],
-                "taxon": k[1],
-                "sanitized_taxon": sanitize_name(k[1]),
-                "n_proteins": protein_counts[k],
-                "n_OPUs": len(opu_sets[k]),
+                "taxon": t,
+                "n_proteins": taxon_proteins[t],
+                "n_OPUs": len(taxon_opu_sets[t]),
+                "n_studies": len(taxon_erz_sets[t]),
+                "n_KEGG": len(taxon_kegg_sets[t]),
+                "KEGG_coverage": kegg_cov(t),
             }
-            for k in protein_counts
+            for t in taxon_proteins
         ],
-        key=lambda x: x[rank_field],
+        key=lambda x: x[args.rank_by if args.rank_by in x else "n_proteins"],
         reverse=True,
     )
+    # Use rank_fn for custom sort
+    taxa_rows.sort(key=lambda x: rank_fn(x["taxon"]), reverse=True)
 
-    # Print top-50 to stdout for inspection
-    display_n = min(50, len(pairs))
-    col_w = max(len(p["erz_code"]) for p in pairs[:display_n])
-    header = (
-        f"{'Rank':>5}  {'n_proteins':>12}  {'n_OPUs':>8}  "
-        f"{'ERZ code':<{col_w}}  Taxon"
+    # ── Print top-30 taxon summary ────────────────────────────────────────────
+    display_n = min(30, len(taxa_rows))
+    print(
+        f"\nTop {display_n} taxa ranked by '{args.rank_by}' "
+        f"(aggregated across all ERZ studies):"
     )
-    sep = "─" * len(header)
-    print(f"\n{sep}")
-    print(header)
+    hdr = f"{'Rank':>5}  {'proteins':>10}  {'OPUs':>7}  {'studies':>7}  {'KEGG_KOs':>9}  {'KEGG_cov':>9}  Taxon"
+    sep = "─" * len(hdr)
     print(sep)
-    for i, p in enumerate(pairs[:display_n], 1):
+    print(hdr)
+    print(sep)
+    for i, r in enumerate(taxa_rows[:display_n], 1):
         print(
-            f"{i:>5}  {p['n_proteins']:>12,}  {p['n_OPUs']:>8,}  "
-            f"{p['erz_code']:<{col_w}}  {p['taxon']}"
+            f"{i:>5}  {r['n_proteins']:>10,}  {r['n_OPUs']:>7,}  "
+            f"{r['n_studies']:>7}  {r['n_KEGG']:>9,}  {r['KEGG_coverage']:>8.1%}  "
+            f"{r['taxon']}"
         )
-    if len(pairs) > display_n:
-        print(f"  … ({len(pairs) - display_n} more pairs not shown)")
+    if len(taxa_rows) > display_n:
+        print(f"  … ({len(taxa_rows) - display_n} more taxa not shown)")
 
-    # Write top-N to opu_selected_pairs.tsv
-    top_pairs = pairs[: args.top]
+    # ── Select top-N taxa and collect ALL their (ERZ, taxon) pairs ───────────
+    top_taxa = {r["taxon"] for r in taxa_rows[: args.top]}
+    selected_pairs = [
+        {
+            "erz_code": erz,
+            "taxon": taxon,
+            "sanitized_taxon": sanitize_name(taxon),
+            "n_proteins": pair_proteins[(erz, taxon)],
+            "n_OPUs": len(pair_opu_sets[(erz, taxon)]),
+        }
+        for (erz, taxon) in sorted(pair_proteins.keys())
+        if taxon in top_taxa
+    ]
+    # Sort by taxon then ERZ for readability
+    selected_pairs.sort(key=lambda x: (x["taxon"], x["erz_code"]))
+
     pairs_path = os.path.join(args.output_dir, "opu_selected_pairs.tsv")
     with open(pairs_path, "w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh, delimiter="\t")
         writer.writerow(["erz_code", "taxon", "sanitized_taxon", "n_proteins", "n_OPUs"])
-        for p in top_pairs:
+        for p in selected_pairs:
             writer.writerow(
                 [p["erz_code"], p["taxon"], p["sanitized_taxon"],
                  p["n_proteins"], p["n_OPUs"]]
             )
-    print(f"\nTop {len(top_pairs)} pairs written → {pairs_path}")
+    n_erz = len({p["erz_code"] for p in selected_pairs})
+    print(
+        f"\nTop {len(top_taxa)} taxa → {len(selected_pairs)} (ERZ, taxon) pairs "
+        f"across {n_erz} ERZ studies → {pairs_path}"
+    )
 
-    # Write all unique taxon names for taxid resolution
-    all_taxa = sorted({k[1] for k in protein_counts})
+    # Write ALL unique taxon names (not just top-N) for taxid resolution
     taxon_path = os.path.join(args.output_dir, "opu_taxon_names.txt")
     with open(taxon_path, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(all_taxa) + "\n")
-    print(f"Unique taxon names ({len(all_taxa):,}) → {taxon_path}")
+        fh.write("\n".join(all_taxa_names) + "\n")
+    print(f"Unique taxon names ({len(all_taxa_names):,}) → {taxon_path}")
 
     print(
         "\nNext steps:\n"
-        "  1. Review opu_selected_pairs.tsv and remove unwanted rows.\n"
-        "  2. Fetch IPS result files for the ERZ studies listed there.\n"
-        "  3. Run: python3 scripts/split-ips-by-taxon.py <opu_tsv> [options]"
+        "  1. Review opu_selected_pairs.tsv; remove any unwanted rows.\n"
+        "  2. Run: python3 scripts/resolve-opu-taxa.py\n"
+        "  3. Fetch IPS result files for the ERZ studies listed.\n"
+        "  4. Run: python3 scripts/split-ips-by-taxon.py <opu_tsv> --ips-dir <dir>"
     )
 
 
