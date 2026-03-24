@@ -18,7 +18,10 @@
     "prepare": "husky",
     "jsdoc": "jsdoc2md src/*.js > reference.md",
     "create-erz-steps": "python3 scripts/create-erz-steps.py",
-    "create-erz-merged": "node scripts/create-erz-merged.js"
+    "create-erz-merged": "node scripts/create-erz-merged.js",
+    "create-opu-steps": "python3 scripts/create-opu-steps.py",
+    "create-opu-merged": "node scripts/create-opu-merged.js",
+    "resolve-opu-taxa": "python3 scripts/resolve-opu-taxa.py"
   },
   "repository": {
     "type": "git",

@@ -59,6 +59,8 @@ export default class GenomePropertiesViewer {
     gp_server = "http://wwwdev.ebi.ac.uk/interpro/genomeproperties/cgi-bin/test.pl",
     erz_path = "test-files/ERZ",
     erz_merged_path = "test-files/ERZ/ERZ_MERGED.json",
+    opu_merged_path = "test-files/OPU/OPU_MERGED.json",
+    opu_taxid_map_path = "test-files/OPU/opu_taxid_map.json",
     dimensions = {
       tree: { width: 180 },
       total: { short_side: cell_side },
@@ -76,6 +78,7 @@ export default class GenomePropertiesViewer {
     this.fixedHeight = height !== null;
     this.propsOrder = null;
     this.erz_mode = false;
+    this.opu_mode = false;
     this._taxonomy_state = null;
     this.erz_change_callback = null;
 
@@ -110,6 +113,8 @@ export default class GenomePropertiesViewer {
       dimensions,
       erz_path,
       erz_merged_path,
+      opu_merged_path,
+      opu_taxid_map_path,
       controller_element_selector,
       legends_element_selector,
       gp_text_filter_selector,
@@ -846,5 +851,87 @@ export default class GenomePropertiesViewer {
   // Remove an ERZ organism from the viewer
   removeERZ(erzCode) {
     removeGenomePropertiesFile(this, erzCode);
+  }
+
+  // Switch to OPU mode: load OPU_MERGED.json, auto-enable all organisms, and
+  // position each under its predicted taxonomic parent in the tree.
+  async switchToOPUMode() {
+    // Save taxonomy state for later restoration
+    const loaded_taxa = this.gp_taxonomy.nodes
+      ? Object.values(this.gp_taxonomy.nodes)
+          .filter((n) => n.loaded)
+          .map((n) => n.taxid)
+      : [];
+    this._taxonomy_state = {
+      data: this.data,
+      organism_totals: this.organism_totals,
+      propsOrder: this.propsOrder,
+      loaded_taxa,
+    };
+    if (this.gp_taxonomy.nodes) {
+      Object.values(this.gp_taxonomy.nodes).forEach((n) => {
+        n.loaded = false;
+      });
+    }
+    this.organisms = [];
+    this.organism_totals = {};
+    this.propsOrder = null;
+    this.opu_mode = true;
+    this.gp_taxonomy.show_tree = true;
+
+    const [taxid_map, data] = await Promise.all([
+      this.fileGetter.getJSON(this.options.opu_taxid_map_path),
+      this.fileGetter.getJSON(this.options.opu_merged_path),
+    ]);
+
+    preloadSpecies(this, data);
+
+    // Collect unique organism keys from the loaded data
+    const opu_organisms = new Set();
+    Object.values(data).forEach((gp) => {
+      Object.keys(gp.values).forEach((k) => {
+        if (k !== "TOTAL") opu_organisms.add(k);
+      });
+    });
+
+    // Enable every OPU organism and position it under its taxonomic parent
+    for (const organism_key of opu_organisms) {
+      enableSpeciesFromPreLoaded(this, organism_key, true, false);
+      const taxon_name = organism_key.split("::").slice(1).join("::");
+      const parent_taxid = taxid_map[taxon_name];
+      if (parent_taxid !== undefined) {
+        this.gp_taxonomy.place_opu_organism(organism_key, parent_taxid);
+      }
+    }
+
+    this.update_viewer(0);
+  }
+
+  // Restore taxonomy mode after OPU mode.
+  switchFromOPUMode() {
+    this.gp_taxonomy.remove_opu_organisms();
+    const state = this._taxonomy_state || {};
+    this.data = state.data || {};
+    this.organism_totals = state.organism_totals || {};
+    this.propsOrder = state.propsOrder || null;
+    for (const taxId of state.loaded_taxa || []) {
+      if (this.gp_taxonomy.nodes && this.gp_taxonomy.nodes[taxId]) {
+        this.gp_taxonomy.nodes[taxId].loaded = true;
+      }
+    }
+    this._taxonomy_state = null;
+    this.opu_mode = false;
+    this.gp_taxonomy.show_tree = true;
+    this.update_viewer(0);
+  }
+
+  // Enable a single OPU organism from the pre-loaded OPU_MERGED data
+  enableOPU(organism_key) {
+    enableSpeciesFromPreLoaded(this, organism_key, true, true);
+  }
+
+  // Remove a single OPU organism from the viewer
+  removeOPU(organism_key) {
+    removeGenomePropertiesFile(this, organism_key);
   }
 }

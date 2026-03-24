@@ -374,4 +374,42 @@ export default class GenomePropertiesTaxonomy {
     this.current_order = this.orders[method];
     this.dispatcher.call("changeOrder", this, this.current_order);
   }
+
+  // OPU mode: move an already-registered organism node from root.children to
+  // the correct taxonomic parent.  Call after enableSpeciesFromPreLoaded().
+  place_opu_organism(organism_key, parent_taxid) {
+    const opu_node = this.nodes[organism_key];
+    if (!opu_node) return;
+    const parent = this.nodes[String(parent_taxid)];
+    if (!parent) return; // parent not found — leave at root
+    // Remove from root.children where set_organisms_loaded placed it
+    const root_i = this.root.children.indexOf(opu_node);
+    if (root_i !== -1) this.root.children.splice(root_i, 1);
+    // Attach to the correct taxonomic parent
+    if (!parent.children) parent.children = [];
+    if (!parent.children.includes(opu_node)) {
+      parent.children.push(opu_node);
+    }
+    opu_node._opu_parent_taxid = String(parent_taxid);
+  }
+
+  // OPU mode: remove all isFromFile organism nodes (placed by OPU mode),
+  // restoring the taxonomy tree to its pre-OPU state.
+  remove_opu_organisms() {
+    const opu_nodes = Object.values(this.nodes).filter((n) => n.isFromFile);
+    for (const node of opu_nodes) {
+      // Remove from taxonomic parent if it was repositioned
+      if (node._opu_parent_taxid) {
+        const parent = this.nodes[node._opu_parent_taxid];
+        if (parent && parent.children) {
+          const i = parent.children.indexOf(node);
+          if (i !== -1) parent.children.splice(i, 1);
+        }
+      }
+      // Also check root.children (covers nodes not repositioned)
+      const ri = this.root.children.indexOf(node);
+      if (ri !== -1) this.root.children.splice(ri, 1);
+      delete this.nodes[node.taxid];
+    }
+  }
 }

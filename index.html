@@ -26,6 +26,7 @@
                 <ul>
                     <li><label><input type="radio" name="viewer-mode" value="taxonomy" checked> Taxonomy Mode</label></li>
                     <li><label><input type="radio" name="viewer-mode" value="erz"> ERZ Samples</label></li>
+                    <li><label><input type="radio" name="viewer-mode" value="opu"> OPU Mode</label></li>
                 </ul>
             </div>
             <div id="taxonomy-panel">
@@ -57,6 +58,10 @@
             <div id="erz-panel" style="display:none">
                 <header>ERZ Samples</header>
                 <ul id="erz-list"></ul>
+            </div>
+            <div id="opu-panel" style="display:none">
+                <header>OPU Organisms</header>
+                <ul id="opu-list"></ul>
             </div>
             <div>
                 <header>Genome Properties Options</header>
@@ -158,16 +163,52 @@
     };
 
     d3.selectAll('input[name="viewer-mode"]').on("change", function() {
+        // Hide all mode-specific panels first
+        d3.select("#taxonomy-panel").style("display", "none");
+        d3.select("#erz-panel").style("display", "none");
+        d3.select("#opu-panel").style("display", "none");
+
         if (this.value === "erz") {
-            d3.select("#taxonomy-panel").style("display", "none");
             d3.select("#erz-panel").style("display", null);
+            if (viewer.opu_mode) viewer.switchFromOPUMode();
             viewer.switchToERZMode();
+        } else if (this.value === "opu") {
+            d3.select("#opu-panel").style("display", null);
+            if (viewer.erz_mode) viewer.switchToTaxonomyMode();
+            viewer.switchToOPUMode().then(function() {
+                renderOPUList();
+            });
         } else {
             d3.select("#taxonomy-panel").style("display", null);
-            d3.select("#erz-panel").style("display", "none");
-            viewer.switchToTaxonomyMode();
+            if (viewer.erz_mode) viewer.switchToTaxonomyMode();
+            else if (viewer.opu_mode) viewer.switchFromOPUMode();
         }
     });
+
+    var selectedOPU = new Set();
+
+    function renderOPUList() {
+        var opuOrganisms = viewer.organisms.slice();
+        var items = d3.select("#opu-list").selectAll("li")
+            .data(opuOrganisms, function(d) { return d; });
+        items.exit().remove();
+        var li = items.enter().append("li");
+        var label = li.append("label");
+        label.append("input")
+            .attr("type", "checkbox")
+            .attr("value", function(d) { return d; })
+            .property("checked", true)
+            .on("change", function(event, d) {
+                if (d3.select(this).property("checked")) {
+                    selectedOPU.add(d);
+                    viewer.enableOPU(d);
+                } else {
+                    selectedOPU.delete(d);
+                    viewer.removeOPU(d);
+                }
+            });
+        label.append("span").text(function(d) { return " " + d; });
+    }
 
     d3.selectAll('input[name="tree-visibility"]').on("change", function() {
         viewer.gp_taxonomy.show_tree = this.value === "show";
