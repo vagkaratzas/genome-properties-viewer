@@ -93,6 +93,17 @@ The group contains masks as rectangles to give the effect of new GP fading-in/ou
 <dd><p>Updates the size and position of the scrollbar.
 The size of the draggable is proportional to the number of visible columns in the graphic</p>
 </dd>
+<dt><a href="#findNodeGroup">findNodeGroup()</a></dt>
+<dd><p>Find a .node <g> whose bound datum has d.data.id === taxId.
+Returns a D3 selection or null.</p>
+</dd>
+<dt><a href="#labelLeavesText">labelLeavesText()</a></dt>
+<dd><p>Get the text content of the .label-leaves element inside a .node <g> whose
+data key (d.data.id) matches <code>taxId</code>.</p>
+</dd>
+<dt><a href="#nodeGroupExists">nodeGroupExists()</a></dt>
+<dd><p>Return true if a .node <g> with the given taxId key is rendered in the DOM.</p>
+</dd>
 </dl>
 
 <a name="GenomePropertiesHierarchy"></a>
@@ -496,3 +507,23 @@ The size of the draggable is proportional to the number of visible columns in th
 | visible_cols | <code>Number</code> | Indicates how many columns are visible in the area assigned to the heatmap. |
 | current_col | <code>Number</code> | Indicates the index of the first visible column out of the total number of GP. |
 
+<a name="findNodeGroup"></a>
+
+## findNodeGroup()
+Find a .node <g> whose bound datum has d.data.id === taxId.
+Returns a D3 selection or null.
+
+**Kind**: global function  
+<a name="labelLeavesText"></a>
+
+## labelLeavesText()
+Get the text content of the .label-leaves element inside a .node <g> whose
+data key (d.data.id) matches `taxId`.
+
+**Kind**: global function  
+<a name="nodeGroupExists"></a>
+
+## nodeGroupExists()
+Return true if a .node <g> with the given taxId key is rendered in the DOM.
+
+**Kind**: global function  

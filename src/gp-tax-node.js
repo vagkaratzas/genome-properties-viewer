@@ -97,6 +97,10 @@ export default class TaxonomyNodeManager {
         if (d.parent) {
           setTimeout(() => {
             d.data.expanded = !d.data.expanded;
+            // _prune_to_opu() creates shallow copies, so also sync to the
+            // original node so the state persists across update_tree() calls.
+            const orig = this.main.nodes && this.main.nodes[d.data.taxid];
+            if (orig && orig !== d.data) orig.expanded = d.data.expanded;
             this.main.update_tree(500);
           }, 200);
         }
@@ -179,7 +183,9 @@ export default class TaxonomyNodeManager {
       .attr("x", -this.r / 2)
       .attr("y", this.r + 4)
       .style("text-anchor", "end")
-      .style("fill", (d) => (d.data.isFromFile ? "darkred" : null))
+      .style("fill", (d) =>
+        d.data.isFromFile && d.data.loaded ? "darkred" : null,
+      )
       .text((d) => {
         let label = "";
         if (d.label !== "ROOT") {
@@ -215,6 +221,9 @@ export default class TaxonomyNodeManager {
           d.data.isFromFile &&
           (!d.data.children || d.data.children.length === 0)
         ) {
+          // Stop propagation so the group click handler doesn't also fire
+          // speciesRequested for the same leaf node.
+          event.stopPropagation();
           this.main.dispatcher.call(
             "speciesRequested",
             this.main,
@@ -257,19 +266,31 @@ export default class TaxonomyNodeManager {
       .attr("transform", (d) => (d.data.loaded ? "rotate(45)" : null))
       .attr("fill", (d) => (d.data.loaded ? "rgb(183, 83, 84)" : "white"));
     g.selectAll(".label-species")
-      .style("pointer-events", (d) => (d.data.loaded ? "auto" : "none"))
-      .style("user-select", (d) => (d.data.loaded ? "auto" : "none"))
-      .text((d) => {
+      .style("pointer-events", node.data.loaded ? "auto" : "none")
+      .style("user-select", node.data.loaded ? "auto" : "none")
+      .style(
+        "fill",
+        node.data.isFromFile && node.data.loaded ? "darkred" : null,
+      )
+      .text(() => {
+        // Unloaded OPU leaf nodes: suppress label
+        if (
+          node.data.isFromFile &&
+          !node.data.loaded &&
+          !node.children &&
+          !node._children
+        )
+          return "";
         let label = "";
-        if (d.label !== "ROOT") {
-          label = d.label;
-          if (d.data.taxid) {
+        if (node.label !== "ROOT") {
+          label = node.label;
+          if (node.data.taxid) {
             switch (this.main.tax_label_type) {
               case "id":
-                label = d.data.taxid;
+                label = node.data.taxid;
                 break;
               case "both":
-                label = `${d.data.taxid}: ${d.label}`;
+                label = `${node.data.taxid}: ${node.label}`;
                 break;
               default:
                 break;

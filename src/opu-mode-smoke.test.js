@@ -6,7 +6,7 @@
  * downstream OPU organisms after switching to OPU mode (filter_to_taxids).
  * The count must reflect only OPU taxa (isFromFile), not the full taxonomy.
  */
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as d3 from "./d3";
 import GenomePropertiesTaxonomy from "./gp-taxonomy";
 
@@ -140,11 +140,16 @@ describe("OPU mode smoke — label-leaves counts", () => {
   let container;
 
   beforeEach(() => {
+    // Fake timers prevent D3 transition callbacks (requestAnimationFrame /
+    // setTimeout) from firing asynchronously after jsdom tears down the DOM.
+    vi.useFakeTimers();
     document.body.innerHTML = "";
     ({ tax, container } = makeTaxSvg());
     tax.load_taxonomy_obj(JSON.parse(JSON.stringify(MOCK_TAX)));
-    // load_taxonomy_obj calls update_tree(500); drain synchronously
-    // by calling update_tree(0) ourselves after setup.
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("shows full taxonomy leaf count in normal mode", () => {
@@ -183,8 +188,13 @@ describe("OPU mode smoke — label-leaves counts", () => {
       expect(nodeGroupExists(container, "4")).toBe(false);
     });
 
-    it("OPU leaf nodes are rendered as unloaded circles", () => {
-      // Both OPU leaves should exist in the DOM (path via Bacteria is visible).
+    it("OPU leaf nodes are visible only after expanding their parent", () => {
+      // Bacteria starts collapsed — OPU leaves should be hidden initially.
+      expect(nodeGroupExists(container, OPU_A)).toBe(false);
+      expect(nodeGroupExists(container, OPU_B)).toBe(false);
+      // Expanding Bacteria reveals the OPU leaves below it.
+      tax.nodes["2"].expanded = true;
+      tax.update_tree(0);
       expect(nodeGroupExists(container, OPU_A)).toBe(true);
       expect(nodeGroupExists(container, OPU_B)).toBe(true);
     });
@@ -202,6 +212,35 @@ describe("OPU mode smoke — label-leaves counts", () => {
 
       it("Bacteria label-leaves still shows 2", () => {
         expect(labelLeavesText(container, "2")).toBe("2");
+      });
+    });
+
+    describe("expand/collapse persistence across update_tree() calls", () => {
+      it("Bacteria starts collapsed (not expanded)", () => {
+        expect(tax.nodes["2"].expanded).toBe(false);
+      });
+
+      it("expanding Bacteria persists after a second update_tree() call", () => {
+        // Simulate the group click handler syncing expanded to the original node.
+        tax.nodes["2"].expanded = true;
+        tax.update_tree(0);
+        // After rebuild, Bacteria's original node should still be expanded.
+        expect(tax.nodes["2"].expanded).toBe(true);
+        // And Bacteria's children (the OPU leaves) should now be visible.
+        expect(nodeGroupExists(container, OPU_A)).toBe(true);
+        expect(nodeGroupExists(container, OPU_B)).toBe(true);
+      });
+
+      it("collapsing Bacteria hides OPU leaf nodes", () => {
+        // Expand first, then collapse.
+        tax.nodes["2"].expanded = true;
+        tax.update_tree(0);
+        tax.nodes["2"].expanded = false;
+        tax.update_tree(0);
+        // OPU leaves are children of Bacteria; with Bacteria collapsed they
+        // should not be in visible_nodes.
+        expect(nodeGroupExists(container, OPU_A)).toBe(false);
+        expect(nodeGroupExists(container, OPU_B)).toBe(false);
       });
     });
 

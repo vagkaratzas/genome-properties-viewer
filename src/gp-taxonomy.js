@@ -144,7 +144,13 @@ export default class GenomePropertiesTaxonomy {
     } else {
       node._children = node.children;
       if (node.has_loaded_leaves && node._children) {
-        node.children = node._children.filter((d) => d.has_loaded_leaves);
+        // Keep children that have loaded leaves, but exclude isFromFile nodes
+        // that are not actually loaded (unselected OPU organisms): they should
+        // be hidden when their parent is collapsed, unlike truly loaded organisms.
+        const kept = node._children.filter(
+          (d) => d.has_loaded_leaves && (d.data.loaded || !d.data.isFromFile),
+        );
+        node.children = kept.length > 0 ? kept : null;
       } else {
         node.children = null;
       }
