@@ -11,6 +11,15 @@ npm run build
 # Watch + live-reload dev server (browser-sync on port 3000)
 npm run serve
 
+# Unit tests (Vitest — includes jsdom DOM tests in src/*.test.js)
+npm test
+npm run test:watch       # re-runs on file changes
+npm run test:coverage    # outputs coverage/ report
+
+# Browser integration / end-to-end tests (Playwright, requires built bundle)
+npm run test:e2e         # runs tests/ with a real Chromium browser
+npx playwright test --ui # opens the Playwright UI explorer
+
 # Lint (ESLint with airbnb-base + prettier config)
 npm run test:lint
 
@@ -29,9 +38,21 @@ npm run create-erz-steps
 # Create the MERGED_JSON file for ERZ inputs (ERZ_MERGED.json)
 # Reads ERZ_STEPS.json if present for real step-level data; falls back to property-level
 npm run create-erz-merged
+
+# OPU data pipeline
+npm run create-opu-steps    # extract step data from OPU CSVs → OPU_STEPS.json
+npm run create-opu-merged   # build OPU_MERGED.json consumed by the viewer
+npm run resolve-opu-taxa    # resolve OPU taxon names to NCBI taxids
+
+# Security / dependency maintenance
+npm audit          # report known vulnerabilities
+npm audit fix      # apply safe non-breaking fixes
+npm outdated       # show Current / Wanted / Latest for all packages
 ```
 
-Unit tests run with Vitest (`npm test`). Linting is enforced via Husky pre-commit and pre-push hooks.
+Unit tests (Vitest) live in `src/*.test.js`. Browser E2E tests (Playwright) live in `tests/`. Linting is enforced via Husky pre-commit and pre-push hooks.
+
+> **Note on test:e2e:** Playwright tests require `npm run build` first (they load `bin/d3.custom.min.js`). The Vitest jsdom smoke tests (`src/opu-mode-smoke.test.js`) run under `npm test`, not `test:e2e`.
 
 ## Architecture
 

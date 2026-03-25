@@ -222,11 +222,16 @@ export default class GenomePropertiesViewer {
         this.order_organisms_current_order();
       })
       .on("speciesRequested", (taxId) => {
-        enableSpeciesFromPreLoaded(this, taxId);
+        if (this.opu_mode) {
+          enableSpeciesFromPreLoaded(this, taxId, true, true);
+        } else {
+          enableSpeciesFromPreLoaded(this, taxId);
+        }
       })
       .on("multipleSpeciesRequested", (taxa) => {
+        const isOPU = this.opu_mode;
         for (const taxId of taxa) {
-          enableSpeciesFromPreLoaded(this, taxId, false, false);
+          enableSpeciesFromPreLoaded(this, taxId, isOPU, isOPU);
         }
         this.update_viewer(500);
       })
@@ -897,10 +902,11 @@ export default class GenomePropertiesViewer {
       });
     });
 
-    // Enable every OPU organism and position it under its taxonomic parent.
-    // Organism keys are plain taxon names (e.g. "Polaribacter").
+    // Register every OPU organism in the tree as unloaded and position it
+    // under its taxonomic parent.  Organisms are NOT selected by default.
+    this._opu_organisms = Array.from(opu_organisms);
     for (const organism_key of opu_organisms) {
-      enableSpeciesFromPreLoaded(this, organism_key, true, false);
+      this.gp_taxonomy.register_opu_node(organism_key);
       const parent_taxid = taxid_map[organism_key];
       if (parent_taxid !== undefined) {
         this.gp_taxonomy.place_opu_organism(organism_key, parent_taxid);

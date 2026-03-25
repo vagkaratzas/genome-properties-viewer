@@ -418,8 +418,25 @@ export default class GenomePropertiesTaxonomy {
     this.dispatcher.call("changeOrder", this, this.current_order);
   }
 
+  // OPU mode: register an organism node as unloaded (isFromFile=true, loaded=false)
+  // so it appears in the tree without being selected.  Call before place_opu_organism().
+  register_opu_node(organism_key) {
+    if (!(organism_key in this.nodes)) {
+      this.nodes[organism_key] = {
+        id: organism_key,
+        loaded: false,
+        taxid: organism_key,
+        name: organism_key,
+        isFromFile: true,
+      };
+      this.root.children.push(this.nodes[organism_key]);
+    } else {
+      this.nodes[organism_key].isFromFile = true;
+    }
+  }
+
   // OPU mode: move an already-registered organism node from root.children to
-  // the correct taxonomic parent.  Call after enableSpeciesFromPreLoaded().
+  // the correct taxonomic parent.  Call after register_opu_node().
   place_opu_organism(organism_key, parent_taxid) {
     const opu_node = this.nodes[organism_key];
     if (!opu_node) return;

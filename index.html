@@ -163,6 +163,8 @@
     };
 
     viewer.opu_change_callback = function(organisms) {
+        selectedOPU.clear();
+        organisms.forEach(function(o) { selectedOPU.add(o); });
         d3.select("#opu-list").selectAll("input[type=checkbox]")
             .property("checked", function(d) { return organisms.indexOf(d) !== -1; });
     };
@@ -193,16 +195,17 @@
     var selectedOPU = new Set();
 
     function renderOPUList() {
-        var opuOrganisms = viewer.organisms.slice();
+        var allOrganisms = (viewer._opu_organisms || []).slice().sort();
+        selectedOPU.clear();
         var items = d3.select("#opu-list").selectAll("li")
-            .data(opuOrganisms, function(d) { return d; });
+            .data(allOrganisms, function(d) { return d; });
         items.exit().remove();
         var li = items.enter().append("li");
         var label = li.append("label");
         label.append("input")
             .attr("type", "checkbox")
             .attr("value", function(d) { return d; })
-            .property("checked", true)
+            .property("checked", false)
             .on("change", function(event, d) {
                 if (d3.select(this).property("checked")) {
                     selectedOPU.add(d);

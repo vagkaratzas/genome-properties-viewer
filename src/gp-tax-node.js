@@ -204,13 +204,23 @@ export default class TaxonomyNodeManager {
       .attr("class", "node-type")
       .attr("fill", "white")
       .on("click", (event, d) => {
-        if (d.data.loaded)
+        if (d.data.loaded) {
           this.main.dispatcher.call(
             "removeSpecies",
             this.main,
             event,
             d.data.taxid,
           );
+        } else if (
+          d.data.isFromFile &&
+          (!d.data.children || d.data.children.length === 0)
+        ) {
+          this.main.dispatcher.call(
+            "speciesRequested",
+            this.main,
+            d.data.taxid,
+          );
+        }
       });
 
     this.update_node(node, i, context);
@@ -219,6 +229,10 @@ export default class TaxonomyNodeManager {
   update_node(node, i, context) {
     const g = d3.select(context[i]);
     const { r } = this;
+
+    g.selectAll(".label-leaves").text(
+      node.data.number_of_leaves > 1 ? node.data.number_of_leaves : "",
+    );
 
     g.selectAll("circle").attr("r", (d) => {
       if (d.children || d._children) return r;
