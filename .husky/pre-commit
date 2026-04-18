@@ -1,4 +1,6 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
+#\!/bin/sh
 npm run prettier
+git add -u
+npm run build
+git add bin/d3.custom.min.js bin/d3.custom.min.js.map
+npm run test:lint

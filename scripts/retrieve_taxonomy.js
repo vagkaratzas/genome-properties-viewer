@@ -1,8 +1,9 @@
 "use strict";
+var path = require("path");
 var mysql = require("mysql");
 
 var fs = require("fs");
-var content = fs.readFileSync("./src/taxonomy/config.json");
+var content = fs.readFileSync(path.join(__dirname, "config.json"));
 var jsonContent = JSON.parse(content);
 var ids = [
   "1005058",

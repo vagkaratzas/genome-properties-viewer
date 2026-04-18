@@ -18,10 +18,10 @@ export default class TaxonomyNodeManager {
         const e = this.main.current_order.splice(current_o, 1);
         this.main.current_order.splice(current_o + d_col, 0, e[0]);
         this.main.update_tree(1000);
-        this.main.dipatcher.call(
+        this.main.dispatcher.call(
           "changeOrder",
           this.main,
-          this.main.current_order
+          this.main.current_order,
         );
       }
     };
@@ -44,7 +44,7 @@ export default class TaxonomyNodeManager {
         (d) =>
           `node ${d.children ? " node--internal" : " node--leaf"}${
             d.data.loaded ? " loaded" : ""
-          }`
+          }`,
       )
       .style("fill-opacity", (d) => (d.data.id === "fake-root" ? 0 : null))
       .transition(t)
@@ -59,12 +59,12 @@ export default class TaxonomyNodeManager {
         (d) =>
           `node ${d.children ? " node--internal" : " node--leaf"}${
             d.data.loaded ? " loaded" : ""
-          }`
+          }`,
       )
       .style("fill-opacity", (d) => (d.data.id === "fake-root" ? 0 : null))
       .on("mouseover", (event, d) => {
         d3.select("#info_organism").text(
-          `${d.label}${d.data.taxid ? ` - ${d.data.taxid}` : ""}`
+          `${d.label}${d.data.taxid ? ` - ${d.data.taxid}` : ""}`,
         );
         d3.select(event.currentTarget)
           .selectAll("circle")
@@ -88,7 +88,11 @@ export default class TaxonomyNodeManager {
           (!d.data.children || d.data.children.length === 0)
         ) {
           // Only leaves have taxId attached
-          this.main.dipatcher.call("spaciesRequested", this.main, d.data.taxid);
+          this.main.dispatcher.call(
+            "speciesRequested",
+            this.main,
+            d.data.taxid,
+          );
         }
         if (d.parent) {
           setTimeout(() => {
@@ -100,13 +104,17 @@ export default class TaxonomyNodeManager {
       .on("dblclick", (event, d) => {
         if (!d.data.children || d.data.children.length === 0) {
           // Only leaves have taxId attached
-          this.main.dipatcher.call("spaciesRequested", this.main, d.data.taxid);
+          this.main.dispatcher.call(
+            "speciesRequested",
+            this.main,
+            d.data.taxid,
+          );
         }
         if (d.parent) {
-          this.main.dipatcher.call(
-            "multipleSpaciesRequested",
+          this.main.dispatcher.call(
+            "multipleSpeciesRequested",
             this.main,
-            this.main.getLeaves(d.data)
+            this.main.getLeaves(d.data),
           );
         }
       })
@@ -141,10 +149,10 @@ export default class TaxonomyNodeManager {
               const time = d3.transition().duration(500);
               g.transition(time).attr(
                 "transform",
-                (p) => `translate(${p.x},${p.y})`
+                (p) => `translate(${p.x},${p.y})`,
               );
             }
-          })
+          }),
       )
       .each((d, i, c) => this.draw_node(d, i, c));
   }
@@ -152,7 +160,6 @@ export default class TaxonomyNodeManager {
   draw_node(node, i, context) {
     const g = d3.select(context[i]);
     g.append("circle");
-    // g.attr("transform", d => "translate(" + d.x + "," + d.y + ")scale(0)")
     g.attr("transform", (d) => `translate(${d.x},${d.y})scale(0)`)
       .transition(this.t)
       .delay(300)
@@ -164,7 +171,7 @@ export default class TaxonomyNodeManager {
       .attr("y", -this.r)
       .style("text-anchor", "end")
       .text((d) =>
-        d.data.number_of_leaves > 1 ? d.data.number_of_leaves : ""
+        d.data.number_of_leaves > 1 ? d.data.number_of_leaves : "",
       );
 
     g.append("text")
@@ -172,7 +179,6 @@ export default class TaxonomyNodeManager {
       .attr("x", -this.r / 2)
       .attr("y", this.r + 4)
       .style("text-anchor", "end")
-      // .style("transform", "rotate(-70deg)")
       .style("fill", (d) => (d.data.isFromFile ? "darkred" : null))
       .text((d) => {
         let label = "";
@@ -199,11 +205,11 @@ export default class TaxonomyNodeManager {
       .attr("fill", "white")
       .on("click", (event, d) => {
         if (d.data.loaded)
-          this.main.dipatcher.call(
-            "removeSpacies",
+          this.main.dispatcher.call(
+            "removeSpecies",
             this.main,
             event,
-            d.data.taxid
+            d.data.taxid,
           );
       });
 

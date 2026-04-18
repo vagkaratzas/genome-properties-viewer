@@ -172,7 +172,8 @@ input[type="file"] {
   text-align: right;
   padding: 1px;
 }
-.gp-legends ul label {
+.gp-legends ul label,
+.gp-legends ul .legend-label {
   color: gray;
   text-transform: capitalize;
   vertical-align: super;
@@ -220,20 +221,17 @@ div.gp-modal-content.gp-modal-active {
   position: fixed;
   left: 50%;
   top: 50%;
+  transform: translate(-50%, -50%);
   pointer-events: none;
+  max-height: 80vh;
+  width: 80vw;
+  overflow-y: auto;
 }
 .gp-modal-content {
-  position: relative;
-  width: 80vw;
   min-height: 100px;
-  height: 100%;
-  max-height: 80vh;
   background: white;
-  top: -10vh;
-  left: -50%;
   opacity: 0;
   pointer-events: none;
-  overflow: scroll;
 }
 
 .progress-panel {
@@ -243,6 +241,10 @@ div.gp-modal-content.gp-modal-active {
 }
 .progress-panel .gauges-panel {
   text-align: center;
+}
+.progress-panel .gauges-panel svg.gauges {
+  height: 100px;
+  max-width: 120px;
 }
 .progress-panel .requests-list {
   background: #5d5d5d;
@@ -385,7 +387,8 @@ div.container > div {
   list-style-type: none;
   padding: 0 10px 0 20px;
 }
-.top-controllers > div ul li label {
+.top-controllers > div ul li label,
+.top-controllers > div ul li span {
   color: gray;
   display: inline;
 }
@@ -508,10 +511,6 @@ div.container .top-block .minimise.on::after {
 .autocomplete-suggestion.selected {
   background: #f0f0f0;
 }
-
-/* svg.gp-viewer:focus {
-  background: aliceblue;
-} */
 
 .step-toggler circle,
 .step-toggler path {

@@ -2,5 +2,8 @@
 node_modules/
 *.iml
 .idea/
-/src/taxonomy/config.json
+scripts/config.json
 taxonomy.json
+coverage/
+playwright-report/
+test-results/

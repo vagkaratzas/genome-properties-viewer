@@ -27,8 +27,7 @@ class GenomePropertiesHierarchy {
      * Event dispatcher using `d3.dispatch`
      * @type {Object}
      * */
-    this.dipatcher = d3.dispatch("siwtchChanged", "hierarchyLoaded");
-    return this;
+    this.dispatcher = d3.dispatch("switchChanged", "hierarchyLoaded");
   }
 
   /**
@@ -41,7 +40,7 @@ class GenomePropertiesHierarchy {
       .then((response) => {
         if (!response.ok)
           throw new Error(`${response.status} ${response.statusText}`);
-        return response.json;
+        return response.json();
       })
       .then((data) => {
         this.load_hierarchy_from_data(data);
@@ -51,8 +50,8 @@ class GenomePropertiesHierarchy {
   }
 
   /**
-   * Defines all the atrributes by processing the JSON object
-   * @param {Object} data - Object representing the root of the Hierachy
+   * Defines all the attributes by processing the JSON object
+   * @param {Object} data - Object representing the root of the Hierarchy
    */
   load_hierarchy_from_data(data) {
     this.root = data;
@@ -66,11 +65,11 @@ class GenomePropertiesHierarchy {
       id: d.id,
       enable: true,
     }));
-    this.dipatcher.call("hierarchyLoaded", this, this.root);
+    this.dispatcher.call("hierarchyLoaded", this, this.root);
   }
 
   /**
-   * Wlaks the tree, adding each node in `this.nodes` and generating a list of parents(in `node.parents`) for each node.
+   * Walks the tree, adding each node in `this.nodes` and generating a list of parents(in `node.parents`) for each node.
    * @param {Object} node - each node has the shape `{id: <String>, name: <String>, children: [<Node>]}`.
    */
   add_node_recursively(node, parent = null) {
@@ -91,8 +90,11 @@ class GenomePropertiesHierarchy {
    * @return {Array} Array of ids of the top level properties.
    */
   get_top_level_gp_by_id(id) {
-    if (id in this.nodes)
-      return [...this.get_top_level_gp(this.nodes[id])].map((d) => d.id);
+    if (id in this.nodes) {
+      const result = this.get_top_level_gp(this.nodes[id]);
+      if (result === null) return null; // id is the hierarchy root itself
+      return [...result].map((d) => d.id);
+    }
     return [];
   }
 
@@ -119,23 +121,23 @@ class GenomePropertiesHierarchy {
   }
 
   /**
-   * finds the top level property with the given id,  toggles the value of `enable`, and then dispatches an event announceing the change.
+   * Finds the top level property with the given id, toggles the value of `enable`, and then dispatches an event announcing the change.
    * @param {String} id - Id of the top level genome property
    */
   toggle_switch(id) {
     this.hierarchy_switch.forEach((e) => {
       if (e.id === id.id) e.enable = !e.enable;
     });
-    this.dipatcher.call("siwtchChanged", this, this.hierarchy_switch);
+    this.dispatcher.call("switchChanged", this, this.hierarchy_switch);
   }
 
   /**
    * shortcut to add invoke a callback when one of the dispatched events gets trigger
-   * @param {String} typename - one of the dispatched events: "siwtchChanged", "hierarchyLoaded"
+   * @param {String} typename - one of the dispatched events: "switchChanged", "hierarchyLoaded"
    * @return {GenomePropertiesHierarchy} The curent instance for chaining methods.
    */
   on(typename, callback) {
-    this.dipatcher.on(typename, callback);
+    this.dispatcher.on(typename, callback);
     return this;
   }
 }
